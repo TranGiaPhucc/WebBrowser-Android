@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     //Upload
     public Context context;
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    //private static final String TAG = MainActivity.class.getSimpleName();
 
     /*private static final int FILECHOOSER_RESULTCODE = 1;
     private ValueCallback<Uri> mUploadMessage;
@@ -102,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
     private final int REQUEST_CODE = 103;
 
     private Handler mHandler = new Handler();
-    private long mStartRX = 0;
-    private long mStartTX = 0;
-    private long txBytes = 0;
-    private long rxBytes = 0;
+    //private long mStartRX = 0;
+    //private long mStartTX = 0;
+    //private long txBytes = 0;
+    //private long rxBytes = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             manager.createNotificationChannel(channel);
         }*/
 
-        mStartRX = TrafficStats.getTotalRxBytes();
+        /*mStartRX = TrafficStats.getTotalRxBytes();
         mStartTX = TrafficStats.getTotalTxBytes();
 
         if (mStartRX == TrafficStats.UNSUPPORTED || mStartTX == TrafficStats.UNSUPPORTED) {
@@ -143,7 +143,9 @@ public class MainActivity extends AppCompatActivity {
             alert.show();
         } else {
             mHandler.postDelayed(mRunnable, 0);
-        }
+        }*/
+
+        mHandler.postDelayed(mRunnable, 0);
 
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -629,25 +631,25 @@ public class MainActivity extends AppCompatActivity {
             String downloadSpeed, downloadUnit, uploadSpeed, uploadUnit;
             String contentDownload, contentUpload;
 
-            rxBytes = (TrafficStats.getTotalRxBytes() - mStartRX)/1024;        //KBps
-            if (rxBytes < 1000) {
-                downloadSpeed = Long.toString(rxBytes);
+            //rxBytes = (TrafficStats.getTotalRxBytes() - mStartRX)/1024;        //KBps
+            if (InternetSpeedMeter.rxBytes < 1000) {
+                downloadSpeed = Long.toString(InternetSpeedMeter.rxBytes);
                 downloadUnit = "KB/s";
             }
             else {
-                downloadSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
+                downloadSpeed = Double.toString((double)Math.round((double)InternetSpeedMeter.rxBytes / 1000 * 10) / 10);
                 downloadUnit = "MB/s";
             }
             contentDownload = "Download: " + downloadSpeed + " " + downloadUnit;
             RX.setText(contentDownload);
 
-            txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
-            if (txBytes < 1000) {
-                uploadSpeed = Long.toString(txBytes);
+            //txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
+            if (InternetSpeedMeter.txBytes < 1000) {
+                uploadSpeed = Long.toString(InternetSpeedMeter.txBytes);
                 uploadUnit = "KB/s";
             }
             else {
-                uploadSpeed = Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10);
+                uploadSpeed = Double.toString((double)Math.round((double)InternetSpeedMeter.txBytes / 1000 * 10) / 10);
                 uploadUnit = "MB/s";
             }
             contentUpload = "Upload: " + uploadSpeed + " " + uploadUnit;
@@ -655,10 +657,10 @@ public class MainActivity extends AppCompatActivity {
 
             //showNotification();
 
-            mStartRX = TrafficStats.getTotalRxBytes();
-            mStartTX = TrafficStats.getTotalTxBytes();
+            //mStartRX = TrafficStats.getTotalRxBytes();
+            //mStartTX = TrafficStats.getTotalTxBytes();
 
-            mHandler.postDelayed(mRunnable, 1000);
+            mHandler.postDelayed(mRunnable, 0);
         }
     };
 

@@ -26,11 +26,12 @@ import java.util.TimerTask;
 
 public class InternetSpeedMeter extends Service {
 
+    private String connectionType = "";
     private Handler mHandler = new Handler();
     private long mStartRX = 0;
     private long mStartTX = 0;
-    private long txBytes = 0;
-    private long rxBytes = 0;
+    public static long txBytes = 0;
+    public static long rxBytes = 0;
 
     //private boolean checkHandlerOn = false;
 
@@ -63,7 +64,7 @@ public class InternetSpeedMeter extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        /*Timer timer = new Timer();
+        Timer timer = new Timer();
         timer.schedule(new TimerTask()
         {
             @Override
@@ -81,22 +82,29 @@ public class InternetSpeedMeter extends Service {
 
                 if (!is3g && !isWifi)
                 {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         NotificationManager notifManager= getSystemService(NotificationManager.class);
                         notifManager.cancelAll();
                     }
                     mHandler.removeCallbacks(mRunnable);
-                    checkHandlerOn = false;
+                    checkHandlerOn = false;*/
+
+                    connectionType = "No internet connection";
                 }
                 else
                 {
-                    if (checkHandlerOn == false) {
+                    /*if (checkHandlerOn == false) {
                         mHandler.postDelayed(mRunnable, 0);
                         checkHandlerOn = true;
-                    }
+                    }*/
+
+                    if (is3g)
+                        connectionType = "MOBILE";
+                    if (isWifi)
+                        connectionType = "WIFI";
                 }
             }
-        }, 0, 1000);*/
+        }, 0, 1000);
 
         //onDestroy();
 
@@ -132,26 +140,8 @@ public class InternetSpeedMeter extends Service {
 
     private final Runnable mRunnable = new Runnable() {
         public void run() {
-            //TextView RX = (TextView) findViewById(R.id.txtDownloadSpeed);
-            //TextView TX = (TextView) findViewById(R.id.txtUploadSpeed);
-
             rxBytes = (TrafficStats.getTotalRxBytes() - mStartRX)/1024;        //KBps
-            //RX.setText("Download: " + Long.toString(rxBytes) + " KBps");
-            /*if (rxBytes < 1024)
-                RX.setText("Download: " + Long.toString(rxBytes) + " Kbps");
-            else {
-                double round = Math.round((double) rxBytes / 1024 * 10.0) / 10;
-                RX.setText("Download: " + Double.toString(round) + " Mbps");
-            }*/
-
             txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
-            //TX.setText("Upload: " + Long.toString(txBytes) + " KBps");
-            /*if (txBytes < 1024)
-                TX.setText("Upload: " + Long.toString(txBytes) + " Kbps");
-            else {
-                double round = Math.round((double) txBytes / 1024 * 10.0) / 10;
-                TX.setText("Upload: " + Double.toString(round) + " Mbps");
-            }*/
 
             showNotification();
 
@@ -164,16 +154,6 @@ public class InternetSpeedMeter extends Service {
 
     private void showNotification() {
         // TODO Auto-generated method stub
-        /*NotificationManager nMN = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/"));
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        Notification.Builder n  = new Notification.Builder(this)
-                .setContentTitle("Internet Speed Meter")
-                .setContentText("Upload: " + Long.toString(txBytes) + "        Download: " + Long.toString(rxBytes))
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentIntent(pendingIntent);
-        //n.flags |= Notification.FLAG_NO_CLEAR;
-        nMN.notify(0, n.build());*/
 
         String bmSpeed, bmUnit;
         String uploadSpeed, downloadSpeed, uploadUnit, downloadUnit;
@@ -212,7 +192,8 @@ public class InternetSpeedMeter extends Service {
 
         //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
         startForeground(1, new NotificationCompat.Builder(this, "My notification")
-                .setContentTitle("Internet Speed Meter")
+                //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
+                .setContentTitle("Connection type: " + connectionType)
                 .setContentText(contentText)
         //builder.setSmallIcon(R.mipmap.ic_launcher_round);
                 .setSmallIcon(IconCompat.createFromIcon(icon))
