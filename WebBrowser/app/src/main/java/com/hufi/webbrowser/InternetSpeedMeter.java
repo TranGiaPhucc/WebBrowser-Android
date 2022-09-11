@@ -20,6 +20,7 @@ import android.widget.TextView;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -148,9 +149,20 @@ public class InternetSpeedMeter extends Service {
             mStartRX = TrafficStats.getTotalRxBytes();
             mStartTX = TrafficStats.getTotalTxBytes();
 
+            sendMessage();
+
             mHandler.postDelayed(mRunnable, 1000);
         }
     };
+
+    private void sendMessage() {
+        // The string "my-message" will be used to filer the intent
+        Intent intent = new Intent("internet-speed");
+        // Adding some data
+        intent.putExtra("txBytes", txBytes);
+        intent.putExtra("rxBytes", rxBytes);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
     private void showNotification() {
         // TODO Auto-generated method stub

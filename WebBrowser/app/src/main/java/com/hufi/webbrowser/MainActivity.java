@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
@@ -19,6 +20,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri[]> mUploadMessage;
     private final int REQUEST_CODE = 103;
 
-    private Handler mHandler = new Handler();
+    //private Handler mHandler = new Handler();
     //private long mStartRX = 0;
     //private long mStartTX = 0;
     //private long txBytes = 0;
@@ -145,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             mHandler.postDelayed(mRunnable, 0);
         }*/
 
-        mHandler.postDelayed(mRunnable, 0);
+        //mHandler.postDelayed(mRunnable, 0);
 
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -622,7 +624,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
-
+/*
     private final Runnable mRunnable = new Runnable() {
         public void run() {
             TextView RX = (TextView) findViewById(R.id.txtDownloadSpeed);
@@ -663,7 +665,7 @@ public class MainActivity extends AppCompatActivity {
             mHandler.postDelayed(mRunnable, 0);
         }
     };
-
+*/
     /*private void showNotification() {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "My notification");
@@ -763,15 +765,67 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mMessageReceiver);
     }
 */
+
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Extract data included in the Intent
+            long txBytes = intent.getLongExtra("txBytes", 0);
+            long rxBytes = intent.getLongExtra("rxBytes", 0);
+
+            TextView RX = (TextView) findViewById(R.id.txtDownloadSpeed);
+            TextView TX = (TextView) findViewById(R.id.txtUploadSpeed);
+
+            String downloadSpeed, downloadUnit, uploadSpeed, uploadUnit;
+            String contentDownload, contentUpload;
+
+            //rxBytes = (TrafficStats.getTotalRxBytes() - mStartRX)/1024;        //KBps
+            if (rxBytes < 1000) {
+                downloadSpeed = Long.toString(rxBytes);
+                downloadUnit = "KB/s";
+            }
+            else {
+                downloadSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
+                downloadUnit = "MB/s";
+            }
+            contentDownload = "Download: " + downloadSpeed + " " + downloadUnit;
+            RX.setText(contentDownload);
+
+            //txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
+            if (txBytes < 1000) {
+                uploadSpeed = Long.toString(txBytes);
+                uploadUnit = "KB/s";
+            }
+            else {
+                uploadSpeed = Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10);
+                uploadUnit = "MB/s";
+            }
+            contentUpload = "Upload: " + uploadSpeed + " " + uploadUnit;
+            TX.setText(contentUpload);
+        }
+    };
+
     @Override
     protected void onResume() {
         super.onResume();
+
         txtUrl.clearFocus();
         webView.requestFocus();
+
         if (!isMyServiceRunning(InternetSpeedMeter.class))
         {
             startService(new Intent(this, InternetSpeedMeter.class));
         }
+
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(messageReceiver, new IntentFilter("internet-speed"));
+    }
+
+    @Override
+    protected void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver);
+        super.onPause();
     }
 
     @Override
