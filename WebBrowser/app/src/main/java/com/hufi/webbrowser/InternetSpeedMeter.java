@@ -32,7 +32,7 @@ public class InternetSpeedMeter extends Service {
     private long txBytes = 0;
     private long rxBytes = 0;
 
-    private boolean checkHandlerOn = false;
+    //private boolean checkHandlerOn = false;
 
     public InternetSpeedMeter() {
     }
@@ -43,20 +43,23 @@ public class InternetSpeedMeter extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+/*
     @Override
     public void onDestroy() {
-        /*super.onDestroy();
+        super.onDestroy();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notifManager= getSystemService(NotificationManager.class);
             notifManager.cancelAll();
         }
-        mHandler.removeCallbacks(mRunnable);*/
+        mHandler.removeCallbacks(mRunnable);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             start();
         }
-    }
 
+
+    }
+*/
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -107,7 +110,7 @@ public class InternetSpeedMeter extends Service {
     private void start()
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_HIGH);
             channel.setVibrationPattern(new long[]{ 0 });
             channel.enableVibration(true);
             NotificationManager manager = getSystemService(NotificationManager.class);
@@ -123,7 +126,7 @@ public class InternetSpeedMeter extends Service {
             alert.setMessage("Your device does not support traffic stat monitoring.");
             alert.show();
         } else {
-            mHandler.postDelayed(mRunnable, 0);
+            mHandler.postDelayed(mRunnable, 1000);
         }
     }
 
@@ -172,20 +175,23 @@ public class InternetSpeedMeter extends Service {
         //n.flags |= Notification.FLAG_NO_CLEAR;
         nMN.notify(0, n.build());*/
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
-        builder.setContentTitle("Internet Speed Meter");
-        builder.setContentText("Upload: " + Long.toString(txBytes) + " KBps        Download: " + Long.toString(rxBytes) + " KBps");
-        //builder.setSmallIcon(R.mipmap.ic_launcher_round);
         Bitmap bitmap = createBitmapFromString(Long.toString(rxBytes), " KB/s");
         Icon icon = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             icon = Icon.createWithBitmap(bitmap);
         }
-        builder.setSmallIcon(IconCompat.createFromIcon(icon));
-        builder.setAutoCancel(false);
-        builder.setOnlyAlertOnce(true);
-        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
-        managerCompat.notify(1, builder.build());
+
+        //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
+        startForeground(1, new NotificationCompat.Builder(this, "My notification")
+                .setContentTitle("Internet Speed Meter")
+                .setContentText("Upload: " + Long.toString(txBytes) + " KBps        Download: " + Long.toString(rxBytes) + " KBps")
+        //builder.setSmallIcon(R.mipmap.ic_launcher_round);
+                .setSmallIcon(IconCompat.createFromIcon(icon))
+                .setAutoCancel(false)
+                .setOnlyAlertOnce(true)
+                .build());
+        /*NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        managerCompat.notify(1, builder.build());*/
     }
 
     private Bitmap createBitmapFromString(String speed, String units) {

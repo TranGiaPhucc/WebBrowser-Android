@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -22,14 +23,19 @@ public class InternetSpeedMeterAutoStart extends BroadcastReceiver {
         else {
 
         }*/
+
+        //Intent main = new Intent(context, MainActivity.class);
+        //context.startActivity(main);
+
         Intent intent = new Intent(context, InternetSpeedMeter.class);
-        context.startService(intent);
-        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
-        }*/
+        }
+
+        //context.sendBroadcast(main);
+
         //Log.i("Autostart", "started");
     }
 }

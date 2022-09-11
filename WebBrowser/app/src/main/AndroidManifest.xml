@@ -22,7 +22,7 @@
         <receiver
             android:name=".InternetSpeedMeterAutoStart"
             android:enabled="true"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -61,6 +61,7 @@
             android:exported="false" />
         <activity
             android:name=".Login"
+            android:enabled="false"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

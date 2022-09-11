@@ -16,10 +16,19 @@
         android:keepScreenOn="true"
         android:id="@+id/customViewContainer" />
 
+    <ImageButton
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginLeft="7dp"
+        android:background="@android:drawable/ic_popup_sync"
+        android:id="@+id/btnReload" />
+
     <Spinner
         android:id="@+id/spnSearch"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_toRightOf="@id/btnReload"
         android:layout_marginLeft="5dp" />
 
     <EditText
@@ -137,12 +146,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/prgBar">
 
-        <WebView
-            android:id="@+id/webView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/prgBar"
-            android:visibility="visible" />
+
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="0dp"
@@ -151,6 +155,13 @@
 
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/prgBar"
+        android:visibility="visible" />
 
     <TextView
         android:layout_width="wrap_content"

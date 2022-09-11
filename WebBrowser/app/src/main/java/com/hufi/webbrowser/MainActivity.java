@@ -9,12 +9,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout customViewContainer;
     TextView txtUrl, txtUploadSpeed, txtDownloadSpeed;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
-    ImageButton btnMaps, btnPhoneDesktop, btnHistory;
+    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory;
     Spinner spnSearch;
     ProgressBar prgBar;
     Database db;
@@ -117,7 +119,10 @@ public class MainActivity extends AppCompatActivity {
             //finish();
         }
         else {
-            startService(new Intent(this, InternetSpeedMeter.class));
+            if (!isMyServiceRunning(InternetSpeedMeter.class))
+            {
+                startService(new Intent(this, InternetSpeedMeter.class));
+            }
         }
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -176,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
         customViewContainer = findViewById(R.id.customViewContainer);
 
         txtUrl=findViewById(R.id.txtUrl);
+        btnReload=findViewById(R.id.btnReload);
         btnGo=findViewById(R.id.btnGo);
         btnBack=findViewById(R.id.btnBack);
         btnForward=findViewById(R.id.btnForward);
@@ -291,6 +297,13 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 }
                 return false;
+            }
+        });
+
+        btnReload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                webView.reload();
             }
         });
 
@@ -598,6 +611,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private final Runnable mRunnable = new Runnable() {
         public void run() {
             TextView RX = (TextView) findViewById(R.id.txtDownloadSpeed);
@@ -702,12 +725,30 @@ public class MainActivity extends AppCompatActivity {
                     });
         }
     }
+/*
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            finish();
+        }
 
+    };
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mMessageReceiver);
+    }
+*/
     @Override
     protected void onResume() {
         super.onResume();
         txtUrl.clearFocus();
         webView.requestFocus();
+        if (!isMyServiceRunning(InternetSpeedMeter.class))
+        {
+            startService(new Intent(this, InternetSpeedMeter.class));
+        }
     }
 
     @Override
