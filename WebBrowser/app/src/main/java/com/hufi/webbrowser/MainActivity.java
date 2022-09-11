@@ -74,7 +74,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     SwipeRefreshLayout refreshLayout;
     FrameLayout customViewContainer;
-    TextView txtUrl, txtUploadSpeed, txtDownloadSpeed;
+    TextView txtUrl;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
     ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory;
     Spinner spnSearch;
@@ -626,11 +626,32 @@ public class MainActivity extends AppCompatActivity {
             TextView RX = (TextView) findViewById(R.id.txtDownloadSpeed);
             TextView TX = (TextView) findViewById(R.id.txtUploadSpeed);
 
+            String downloadSpeed, downloadUnit, uploadSpeed, uploadUnit;
+            String contentDownload, contentUpload;
+
             rxBytes = (TrafficStats.getTotalRxBytes() - mStartRX)/1024;        //KBps
-            RX.setText("Download: " + Long.toString(rxBytes) + " KBps");
+            if (rxBytes < 1000) {
+                downloadSpeed = Long.toString(rxBytes);
+                downloadUnit = "KB/s";
+            }
+            else {
+                downloadSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
+                downloadUnit = "MB/s";
+            }
+            contentDownload = "Download: " + downloadSpeed + " " + downloadUnit;
+            RX.setText(contentDownload);
 
             txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
-            TX.setText("Upload: " + Long.toString(txBytes) + " KBps");
+            if (txBytes < 1000) {
+                uploadSpeed = Long.toString(txBytes);
+                uploadUnit = "KB/s";
+            }
+            else {
+                uploadSpeed = Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10);
+                uploadUnit = "MB/s";
+            }
+            contentUpload = "Upload: " + uploadSpeed + " " + uploadUnit;
+            TX.setText(contentUpload);
 
             //showNotification();
 

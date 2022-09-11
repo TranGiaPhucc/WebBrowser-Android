@@ -175,18 +175,34 @@ public class InternetSpeedMeter extends Service {
         //n.flags |= Notification.FLAG_NO_CLEAR;
         nMN.notify(0, n.build());*/
 
-        String bmSpeed, bmUnit, contentText;
+        String bmSpeed, bmUnit;
+        String uploadSpeed, downloadSpeed, uploadUnit, downloadUnit;
+        String contentText;
+
+        if (txBytes < 1000) {
+            uploadSpeed = Long.toString(txBytes);
+            uploadUnit = "KB/s";
+        }
+        else {
+            uploadSpeed = Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10);
+            uploadUnit = "MB/s";
+        }
 
         if (rxBytes < 1000) {
             bmSpeed = Long.toString(rxBytes);
             bmUnit = "KB/s";
-            contentText = "Upload: " + Long.toString(txBytes) + " KBps        Download: " + Long.toString(rxBytes) + " KBps";
+            downloadSpeed = Long.toString(rxBytes);
+            downloadUnit = "KB/s";
         }
         else {
             bmSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
             bmUnit = "MB/s";
-            contentText = "Upload: " + Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10) + " MBps        Download: " + Double.toString((double)Math.round(rxBytes * 100) / 100) + " MBps";
+            downloadSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
+            downloadUnit = "MB/s";
         }
+
+        contentText = "Upload: " + uploadSpeed + " " + uploadUnit + "        Download: " + downloadSpeed + " " + downloadUnit;
+        //contentText = "Upload: " + Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10) + " MBps        Download: " + Double.toString((double)Math.round(rxBytes / 1000 * 10) / 10) + " MBps";
 
         Bitmap bitmap = createBitmapFromString(bmSpeed, bmUnit);
         Icon icon = null;
