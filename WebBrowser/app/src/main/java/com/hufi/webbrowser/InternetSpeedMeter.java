@@ -175,7 +175,20 @@ public class InternetSpeedMeter extends Service {
         //n.flags |= Notification.FLAG_NO_CLEAR;
         nMN.notify(0, n.build());*/
 
-        Bitmap bitmap = createBitmapFromString(Long.toString(rxBytes), " KB/s");
+        String bmSpeed, bmUnit, contentText;
+
+        if (rxBytes < 1000) {
+            bmSpeed = Long.toString(rxBytes);
+            bmUnit = "KB/s";
+            contentText = "Upload: " + Long.toString(txBytes) + " KBps        Download: " + Long.toString(rxBytes) + " KBps";
+        }
+        else {
+            bmSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
+            bmUnit = "MB/s";
+            contentText = "Upload: " + Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10) + " MBps        Download: " + Double.toString((double)Math.round(rxBytes * 100) / 100) + " MBps";
+        }
+
+        Bitmap bitmap = createBitmapFromString(bmSpeed, bmUnit);
         Icon icon = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             icon = Icon.createWithBitmap(bitmap);
@@ -184,7 +197,7 @@ public class InternetSpeedMeter extends Service {
         //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
         startForeground(1, new NotificationCompat.Builder(this, "My notification")
                 .setContentTitle("Internet Speed Meter")
-                .setContentText("Upload: " + Long.toString(txBytes) + " KBps        Download: " + Long.toString(rxBytes) + " KBps")
+                .setContentText(contentText)
         //builder.setSmallIcon(R.mipmap.ic_launcher_round);
                 .setSmallIcon(IconCompat.createFromIcon(icon))
                 .setAutoCancel(false)
