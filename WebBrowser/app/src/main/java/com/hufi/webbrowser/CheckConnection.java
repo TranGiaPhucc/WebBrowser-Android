@@ -8,7 +8,7 @@ import android.widget.Toast;
 import java.util.ConcurrentModificationException;
 
 public class CheckConnection {
-    public static boolean haveNetwordConnection(Context context) {
+    public static boolean haveNetworkConnection(Context context) {
         boolean haveConnectedWifi=false;
         boolean haveConnectedMobile=false;
 

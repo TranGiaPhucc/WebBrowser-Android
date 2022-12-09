@@ -10,9 +10,22 @@
         android:layout_marginTop="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="5dp"
         android:textSize="20dp"
         android:textColor="#CCFFFFFF"
+        android:id="@+id/lbTitle" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxHeight="50dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:textSize="15dp"
+        android:textColor="#CCFFFFFF"
+        android:layout_below="@id/lbTitle"
         android:id="@+id/lbUrl" />
+
+
 
 </RelativeLayout>

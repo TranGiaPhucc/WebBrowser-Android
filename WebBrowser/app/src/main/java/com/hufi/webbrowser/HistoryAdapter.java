@@ -34,9 +34,13 @@ public class HistoryAdapter extends ArrayAdapter<History> {
         History h = data.get(position);
 
         String url = h.getUrl();
+        String title = h.getTitle();
 
         TextView lbUrl = convertView.findViewById(R.id.lbUrl);
         lbUrl.setText(url);
+
+        TextView lbTitle = convertView.findViewById(R.id.lbTitle);
+        lbTitle.setText(title);
 
         return convertView;
     }

@@ -17,12 +17,12 @@
         android:id="@+id/customViewContainer" />
 
     <ImageButton
+        android:id="@+id/btnReload"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginTop="7dp"
         android:layout_marginLeft="7dp"
-        android:background="@android:drawable/ic_popup_sync"
-        android:id="@+id/btnReload" />
+        android:layout_marginTop="7dp"
+        android:background="@android:drawable/ic_popup_sync" />
 
     <Spinner
         android:id="@+id/spnSearch"
@@ -173,13 +173,13 @@
         android:id="@+id/txtUploadSpeed"/>
 
     <TextView
+        android:id="@+id/txtDownloadSpeed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
         android:layout_alignParentRight="true"
-        android:text="Download: 0 Kbps"
         android:layout_marginRight="30dp"
-        android:textColor="#4DFFFFFF"
-        android:id="@+id/txtDownloadSpeed"/>
+        android:text="Download: 0 Kbps"
+        android:textColor="#4DFFFFFF" />
 
 </RelativeLayout>

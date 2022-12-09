@@ -1,5 +1,6 @@
 package com.hufi.webbrowser;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,10 +16,9 @@ import android.net.TrafficStats;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -119,11 +119,11 @@ public class InternetSpeedMeter extends Service {
     private void start()
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_MAX);
             channel.setVibrationPattern(new long[]{ 0 });
             channel.enableVibration(true);
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
 
         mStartRX = TrafficStats.getTotalRxBytes();
@@ -140,6 +140,7 @@ public class InternetSpeedMeter extends Service {
     }
 
     private final Runnable mRunnable = new Runnable() {
+        @RequiresApi(api = Build.VERSION_CODES.M)
         public void run() {
             rxBytes = (TrafficStats.getTotalRxBytes() - mStartRX)/1024;        //KBps
             txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
@@ -164,6 +165,8 @@ public class InternetSpeedMeter extends Service {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    @SuppressLint("RestrictedApi")
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void showNotification() {
         // TODO Auto-generated method stub
 
@@ -202,16 +205,33 @@ public class InternetSpeedMeter extends Service {
             icon = Icon.createWithBitmap(bitmap);
         }
 
-        //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
-        startForeground(1, new NotificationCompat.Builder(this, "My notification")
-                //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
-                .setContentTitle("Connection type: " + connectionType)
-                .setContentText(contentText)
-        //builder.setSmallIcon(R.mipmap.ic_launcher_round);
-                .setSmallIcon(IconCompat.createFromIcon(icon))
-                .setAutoCancel(false)
-                .setOnlyAlertOnce(true)
-                .build());
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        //For 3G check
+        boolean is3g = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
+                .isConnectedOrConnecting();
+        //For WiFi Check
+        boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
+                .isConnectedOrConnecting();
+        if (is3g || isWifi) {
+            //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
+            startForeground(1, new NotificationCompat.Builder(this, "My notification")
+                    //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
+                    .setContentTitle("Connection type: " + connectionType)
+                    .setContentText(contentText)
+                    //builder.setSmallIcon(R.mipmap.ic_launcher_round);
+                    .setSmallIcon(IconCompat.createFromIcon(icon))
+                    .setAutoCancel(false)
+                    .setOnlyAlertOnce(true)
+                    .build());
+        }
+        else {
+            stopForeground(true);
+
+            NotificationManager notificationManager = (NotificationManager)
+                    getSystemService(NOTIFICATION_SERVICE);
+            notificationManager.cancelAll();
+        }
+
         /*NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
         managerCompat.notify(1, builder.build());*/
     }

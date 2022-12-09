@@ -43,7 +43,8 @@ public class Database {
         db.execSQL(sql);
         String sql1 = "create table if not exists History(" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "url TEXT ) ";
+                "url TEXT, " +
+                "title TEXT ) ";
         db.execSQL(sql1);
         closeDB(db);
     }
@@ -56,8 +57,9 @@ public class Database {
         if	(csr !=	null)	{
             if	(csr.moveToLast())	{
                 do	{
-                    String	url	=	csr.getString(1);
-                    arr.add(new	History(url));
+                    String url = csr.getString(1);
+                    String title = csr.getString(2);
+                    arr.add(new	History(url, title));
                 }	while	(csr.moveToPrevious());
             } }
         closeDB(db);
@@ -103,6 +105,7 @@ public class Database {
         SQLiteDatabase db = openDB();
         ContentValues cv = new ContentValues();
         cv.put("url", h.getUrl());
+        cv.put("title", h.getTitle());
         flag = db.insert(dbTableHistory, null, cv) > 0;
         closeDB(db);
         return flag;

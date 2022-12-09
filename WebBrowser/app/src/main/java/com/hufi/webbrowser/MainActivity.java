@@ -1,22 +1,8 @@
 package com.hufi.webbrowser;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.graphics.drawable.IconCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.DownloadManager;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,25 +10,10 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.drawable.Icon;
-import android.hardware.BatteryState;
-import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Parcelable;
-import android.os.Vibrator;
-import android.provider.MediaStore;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -68,8 +39,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     Spinner spnSearch;
     ProgressBar prgBar;
     Database db;
+    //SQL sql;
     private List<String> list;
     private WebView webView;
     private String search = "";
@@ -114,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (!CheckConnection.haveNetwordConnection(getApplicationContext())) {
+        if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
             CheckConnection.ShowToast_Short(getApplicationContext(), "No internet connection.");
             //stopService(new Intent(this, InternetSpeedMeter.class));
             //mHandler.removeCallbacks(mRunnable);
@@ -149,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         //mHandler.postDelayed(mRunnable, 0);
 
-        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        //Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         db = new Database(MainActivity.this);
         db.createTable();
@@ -170,7 +144,9 @@ public class MainActivity extends AppCompatActivity {
         webView.setVerticalScrollBarEnabled(false);
         webView.setHorizontalScrollBarEnabled(false);
         webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(false);
         webView.getSettings().setDatabaseEnabled(true);
+        webView.getSettings().setGeolocationEnabled(true);
         //webView.loadUrl("https://www.google.com");
 
         if (db.isHistoryEmpty() == true)
@@ -401,29 +377,52 @@ public class MainActivity extends AppCompatActivity {
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
                 // Here you can check your new URL.
-                super.onPageStarted(view, url, favicon);
-                Log.e("URL", url);
-                txtUrl.setText(url);
+                //super.onPageStarted(view, url, favicon);
+                //Log.e("URL", url);
+                //txtUrl.setText(url);
                 prgBar.setVisibility(View.VISIBLE);
-                //String username = getIntent().getStringExtra("username");
-                //NguoiDung nd = db.getNguoiDung(username);
-                NguoiDung nd = db.getNguoiDung("admin");
-                int webCount = nd.getWebcount() + 1;
-                nd.webcount = webCount;
-                db.update(nd);
-                History h = new History(url);
-                db.insertHistory(h);
             }
 
             @Override
             public void onPageFinished(WebView view, String url)
             {
                 // Here you can check your new URL.
-                super.onPageFinished(view, url);
-                Log.e("URL", url);
-                txtUrl.setText(url);
+                //super.onPageFinished(view, url);
+                //Log.e("URL", url);
+
                 prgBar.setVisibility(View.GONE);
-                //v.vibrate(100);
+
+                String urlCheck = txtUrl.getText().toString();
+                txtUrl.setText(url);
+
+                if (!urlCheck.equals(txtUrl.getText().toString()))
+                {
+                    //String username = getIntent().getStringExtra("username");
+                    //NguoiDung nd = db.getNguoiDung(username);
+                    NguoiDung nd = db.getNguoiDung("admin");
+                    int webCount = nd.getWebcount() + 1;
+                    nd.webcount = webCount;
+                    db.update(nd);
+
+                    String title = view.getTitle();
+                    History h = new History(url, title);
+                    db.insertHistory(h);
+
+                    AsyncTaskSQL runner = new AsyncTaskSQL();
+                    runner.execute(url, title);
+
+                    /*sql = new SQL();
+                    if (sql.isConnected() == false) {
+                        return;
+                    }
+                    sql.insertUrl(url);
+                    v.vibrate(100);
+                    try {
+                        sql.Close();
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }*/
+                }
             }
         });
 
