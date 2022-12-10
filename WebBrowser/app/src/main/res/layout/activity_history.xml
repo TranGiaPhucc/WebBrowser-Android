@@ -12,6 +12,7 @@
         android:layout_height="match_parent"
         android:layout_above="@id/btnXoaLichSu"
         android:layout_marginTop="10dp"
+        android:scrollbars="vertical"
         android:divider="@null"
         android:dividerHeight="0dp"
         android:id="@+id/listHistory" />
@@ -27,5 +28,16 @@
         android:text="Xoá tất cả"
         android:textAllCaps="false"
         android:id="@+id/btnXoaLichSu" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentBottom="true"
+        android:text="Load từ SQL"
+        android:textAllCaps="false"
+        android:id="@+id/btnLoadSQL" />
 
 </RelativeLayout>

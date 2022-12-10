@@ -28,15 +28,17 @@
         android:id="@+id/spnSearch"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginLeft="5dp"
         android:layout_toRightOf="@id/btnReload"
-        android:layout_marginLeft="5dp" />
+        android:visibility="invisible"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_toLeftOf="@id/btnGo"
-        android:layout_toRightOf="@id/spnSearch"
+        android:layout_toRightOf="@id/btnReload"
         android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
         android:selectAllOnFocus="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
@@ -46,6 +48,21 @@
         android:textColor="#CCFFFFFF"
         android:inputType="textUri"
         android:id="@+id/txtUrl"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/txtUrl"
+        android:layout_toLeftOf="@id/btnGo"
+        android:layout_toRightOf="@id/btnReload"
+        android:layout_marginRight="5dp"
+        android:visibility="gone"
+        android:background="#3C3C3C"
+        android:elevation="6dp"
+        android:scrollbars="vertical"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:id="@+id/listUrl" />
 
     <Button
         android:id="@+id/btnGo"

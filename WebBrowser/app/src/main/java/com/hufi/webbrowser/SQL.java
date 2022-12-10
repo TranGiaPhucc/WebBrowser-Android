@@ -1,5 +1,6 @@
 package com.hufi.webbrowser;
 
+import android.content.Context;
 import android.os.StrictMode;
 
 import java.sql.Connection;
@@ -7,6 +8,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class SQL {
     private static String ip = "192.168.1.189";
@@ -94,5 +100,18 @@ public class SQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public  ArrayList<History> loadHistorySQL() throws SQLException {
+        ArrayList<History> list = new ArrayList<>();
+        Statement statement = connection.createStatement();// Tạo đối tượng Statement.
+        String sql = "select * from History";
+        // Thực thi câu lệnh SQL trả về đối tượng ResultSet. // Mọi kết quả trả về sẽ được lưu trong ResultSet
+        ResultSet rs = statement.executeQuery(sql);
+        while (rs.next()) {
+            list.add(new History(rs.getString("url"), rs.getString("title")));
+        }
+        //connection.close();// Đóng kết nối
+        return list;
     }
 }

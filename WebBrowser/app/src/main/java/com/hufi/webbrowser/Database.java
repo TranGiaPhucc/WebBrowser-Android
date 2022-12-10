@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Database {
     Context context;
@@ -41,11 +44,11 @@ public class Database {
                 "name TEXT, " +
                 "webcount INTEGER ) ";
         db.execSQL(sql);
-        String sql1 = "create table if not exists History(" +
+        sql = "create table if not exists History(" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "url TEXT, " +
                 "title TEXT ) ";
-        db.execSQL(sql1);
+        db.execSQL(sql);
         closeDB(db);
     }
 
@@ -63,6 +66,33 @@ public class Database {
                 }	while	(csr.moveToPrevious());
             } }
         closeDB(db);
+        return	arr;
+    }
+
+    public ArrayList<History> getUrlRecommend(String urlText)	{
+        SQLiteDatabase db =	openDB();
+        ArrayList<History>	arr =	new	ArrayList<>();
+        ArrayList<String> arrCheck = new ArrayList<>();
+        String	sql =	"select	*	from	History";
+        Cursor csr =	db.rawQuery(sql,	null);
+        if	(csr !=	null)	{
+            if	(csr.moveToLast())	{
+                do	{
+                    String url = csr.getString(1);
+                    String title = csr.getString(2);
+                    //int count = countHistoryUrl(url);
+                    History h = new History(url, title);
+                    if (url.contains(urlText) && !arrCheck.contains(url)) {
+                            arr.add(h);
+                            arrCheck.add(url);
+                    }
+                }	while	(csr.moveToPrevious());
+            } }
+        closeDB(db);
+
+        //Collections.sort(arr, Comparator.comparing(History::getCount));
+        //Collections.sort(arr, Collections.reverseOrder());
+
         return	arr;
     }
 
@@ -98,6 +128,39 @@ public class Database {
         int webcount = cursor.getInt(3);
         closeDB(db);
         return new NguoiDung(username, password, name, webcount);
+    }
+
+    public int countHistory() {
+        int count = 0;
+        SQLiteDatabase db =	openDB();
+        String	sql =	"select	*	from History";
+        Cursor csr =	db.rawQuery(sql,	null);
+        if	(csr !=	null)	{
+            if	(csr.moveToFirst())	{
+                do	{
+                    count++;
+                }	while	(csr.moveToNext());
+            }
+        }
+        closeDB(db);
+        return count;
+    }
+
+    public int countHistoryUrl(String url) {
+        int count = 0;
+        SQLiteDatabase db =	openDB();
+        String[] fields = {"id", "url", "title"};
+        String[] ids = {url};
+        Cursor csr = db.query(dbTableHistory, fields, "url	=	?", ids, null, null, null, null);
+        if	(csr !=	null)	{
+            if	(csr.moveToFirst())	{
+                do	{
+                    count++;
+                }	while	(csr.moveToNext());
+            }
+        }
+        closeDB(db);
+        return count;
     }
 
     public boolean insertHistory(History h) {

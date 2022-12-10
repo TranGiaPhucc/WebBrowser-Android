@@ -1,6 +1,7 @@
 package com.hufi.webbrowser;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
@@ -14,10 +15,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
@@ -34,6 +38,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -52,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
     TextView txtUrl;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
     ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory;
+    ListView listUrl;
+    ArrayList<History> arrayList;
     Spinner spnSearch;
     ProgressBar prgBar;
     Database db;
@@ -134,7 +141,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         NguoiDung n = db.getNguoiDung("admin");
-        Toast.makeText(MainActivity.this, "Bạn đã duyệt " + n.getWebcount() + " trang web.", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(MainActivity.this, "Bạn đã duyệt " + n.getWebcount() + " trang web.", Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(MainActivity.this, "Bạn đã duyệt " + db.countHistory() + " trang web.", Toast.LENGTH_SHORT).show();
 
         webView=findViewById(R.id.webView);
         webView.setWebViewClient(new WebViewClient());
@@ -161,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
         customViewContainer = findViewById(R.id.customViewContainer);
 
         txtUrl=findViewById(R.id.txtUrl);
+        listUrl=findViewById(R.id.listUrl);
         btnReload=findViewById(R.id.btnReload);
         btnGo=findViewById(R.id.btnGo);
         btnBack=findViewById(R.id.btnBack);
@@ -219,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
 
         txtUrl.setFocusableInTouchMode(true);
         txtUrl.clearFocus();
+        listUrl.setVisibility(View.GONE);
         webView.requestFocus();
         //txtUrl.setCursorVisible(false);
 
@@ -231,6 +242,10 @@ public class MainActivity extends AppCompatActivity {
         spnSearch.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
                 search = list.get(i);
                 txtUrl.setText("");
                 if (search.equals("Web")) {
@@ -243,6 +258,10 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
                 search = "Web";
                 txtUrl.setText("");
                 txtUrl.setHint("https://www.google.com");
@@ -252,7 +271,11 @@ public class MainActivity extends AppCompatActivity {
         txtUrl.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER)
+                if (i == KeyEvent.KEYCODE_BACK) {
+                    txtUrl.clearFocus();
+                    listUrl.setVisibility(View.GONE);
+                }
+                else if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER)
                 {
                     if (search.equals("Web"))
                     {
@@ -265,8 +288,9 @@ public class MainActivity extends AppCompatActivity {
                         webView.loadUrl("https://google.com/search?q=" + url);
                     }
                     //txtUrl.requestFocus();
-                    txtUrl.clearFocus();
                     //txtUrl.setCursorVisible(false);
+                    txtUrl.clearFocus();
+                    listUrl.setVisibility(View.GONE);
                     webView.requestFocus();
                     try {
                         InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
@@ -280,9 +304,107 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        arrayList = new ArrayList<>();
+        HistoryAdapter adapterUrl = new HistoryAdapter(this, R.layout.list_history, arrayList);
+        listUrl.setAdapter(adapterUrl);
+
+        webView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+                return false;
+            }
+        });
+
+        txtUrl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listUrl.getVisibility() == View.GONE) {
+                    listUrl.setVisibility(View.VISIBLE);
+
+                    adapterUrl.clear();
+                    arrayList.addAll(db.getUrlRecommend(txtUrl.getText().toString()));
+                    adapterUrl.notifyDataSetChanged();
+                }
+            }
+        });
+
+        txtUrl.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (!hasFocus) {
+                    txtUrl.clearFocus();
+                    listUrl.setVisibility(View.GONE);
+                    webView.requestFocus();
+                }
+                else {
+                    listUrl.setVisibility(View.VISIBLE);
+
+                    adapterUrl.clear();
+                    arrayList.addAll(db.getUrlRecommend(txtUrl.getText().toString()));
+                    adapterUrl.notifyDataSetChanged();
+                }
+            }
+        });
+
+        txtUrl.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (search.equals("Web"))
+                {
+                    adapterUrl.clear();
+                    arrayList.addAll(db.getUrlRecommend(txtUrl.getText().toString()));
+                    adapterUrl.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (search.equals("Web"))
+                {
+                    adapterUrl.clear();
+                    arrayList.addAll(db.getUrlRecommend(txtUrl.getText().toString()));
+                    adapterUrl.notifyDataSetChanged();
+                }
+
+            }
+        });
+
+        listUrl.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String url = ((TextView) view.findViewById(R.id.lbUrl)).getText().toString();
+                txtUrl.setText(url);
+
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
+                try {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                } catch (Exception e) {
+                    // TODO: handle exception
+                }
+
+                webView.loadUrl(url);
+            }
+        });
+
         btnReload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
                 webView.reload();
             }
         });
@@ -290,6 +412,10 @@ public class MainActivity extends AppCompatActivity {
         btnMaps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
                 Intent intent = new Intent(MainActivity.this, Maps.class);
                 startActivity(intent);
             }
@@ -298,6 +424,10 @@ public class MainActivity extends AppCompatActivity {
         btnPhoneDesktop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
                 if (webView.getSettings().getUseWideViewPort() == false)
                     setDesktopMode(webView, true);
                 else
@@ -308,6 +438,10 @@ public class MainActivity extends AppCompatActivity {
         btnHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
                 Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
                 startActivityForResult(intent, REQUEST_CODE);
             }
@@ -328,6 +462,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 //txtUrl.requestFocus();
                 txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
                 //txtUrl.setCursorVisible(false);
                 webView.requestFocus();
                 try {
@@ -346,6 +481,9 @@ public class MainActivity extends AppCompatActivity {
                 if(webView.canGoBack()){
                     webView.goBack();
                 }
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
             }
         });
 
@@ -354,6 +492,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (webView.canGoForward())
                     webView.goForward();
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
             }
         });
 
@@ -361,6 +502,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 webView.loadUrl("https://www.google.com");
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
             }
         });
 
@@ -368,11 +512,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 webView.loadUrl("https://www.youtube.com");
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
             }
         });
 
         webView.setWebViewClient(new WebViewClient(){
-
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
@@ -380,6 +526,9 @@ public class MainActivity extends AppCompatActivity {
                 //super.onPageStarted(view, url, favicon);
                 //Log.e("URL", url);
                 //txtUrl.setText(url);
+
+
+
                 prgBar.setVisibility(View.VISIBLE);
             }
 
@@ -739,7 +888,7 @@ public class MainActivity extends AppCompatActivity {
                                 DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                                 downloadManager.enqueue(request);
 
-                                Toast.makeText(MainActivity.this,"Tải xuống thành công.",Toast.LENGTH_LONG).show();        //Image Downloaded Successfully
+                                Toast.makeText(MainActivity.this,"Đang tải xuống.",Toast.LENGTH_LONG).show();        //Image Downloaded Successfully
                             }
                             else {
                                 Toast.makeText(MainActivity.this,"Không tải được, có lỗi xảy ra.",Toast.LENGTH_LONG).show();         //Sorry.. Something Went Wrong.
@@ -831,11 +980,22 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         //WebView webView = (WebView) findViewById(R.id.webView);
         webView=findViewById(R.id.webView);
-        if(webView.canGoBack()){
-            webView.goBack();
-        }else{
-            super.onBackPressed();
+        txtUrl=findViewById(R.id.txtUrl);
+        listUrl=findViewById(R.id.listUrl);
+        if (listUrl.getVisibility() == View.VISIBLE) {
+            txtUrl.clearFocus();
+            listUrl.setVisibility(View.GONE);
+            webView.requestFocus();
         }
+        else if (webView.canGoBack()){
+            webView.goBack();
+            txtUrl.clearFocus();
+            listUrl.setVisibility(View.GONE);
+            webView.requestFocus();
+        }
+        /*else {
+            super.onBackPressed();
+        }*/
     }
 
     @Override

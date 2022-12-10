@@ -1,38 +1,36 @@
 package com.hufi.webbrowser;
 
 public class History {
-    int id;
     String url;
     String title;
+    int count = 0;
 
     public History(String url, String title) {
         this.url = url;
         this.title = title;
     }
 
+    public History(String url, String title, int count) {
+        this.url = url;
+        this.title = title;
+        this.count = count;
+    }
+
     @Override
     public String toString() {
         return "History{" +
-                "id=" + id +
-                ", url='" + url + '\'' +
+                "url='" + url + '\'' +
                 ", title='" + title + '\'' +
+                ", count=" + count +
                 '}';
     }
 
-    public String getTitle() {
-        return title;
+    public int getCount() {
+        return count;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public String getUrl() {
@@ -41,5 +39,13 @@ public class History {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
