@@ -205,14 +205,14 @@ public class InternetSpeedMeter extends Service {
             icon = Icon.createWithBitmap(bitmap);
         }
 
-        ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        /*ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         //For 3G check
         boolean is3g = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
                 .isConnectedOrConnecting();
         //For WiFi Check
         boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
                 .isConnectedOrConnecting();
-        if (is3g || isWifi) {
+        if (is3g || isWifi) {*/
             //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
             startForeground(1, new NotificationCompat.Builder(this, "My notification")
                     //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
@@ -223,14 +223,14 @@ public class InternetSpeedMeter extends Service {
                     .setAutoCancel(false)
                     .setOnlyAlertOnce(true)
                     .build());
-        }
+        /*}
         else {
             stopForeground(true);
 
             NotificationManager notificationManager = (NotificationManager)
                     getSystemService(NOTIFICATION_SERVICE);
             notificationManager.cancelAll();
-        }
+        }(/
 
         /*NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
         managerCompat.notify(1, builder.build());*/
