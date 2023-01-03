@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -283,13 +285,19 @@ public class MainActivity extends AppCompatActivity {
                     if (search.equals("Web"))
                     {
                         String url=txtUrl.getText().toString().replace(" ","");
-                        webView.loadUrl(url);
+                        if (URLUtil.isValidUrl(url))
+                            webView.loadUrl(url);
+                        else {
+                            url=txtUrl.getText().toString().replace(" ","+");
+                            webView.loadUrl("https://google.com/search?q=" + url);
+                        }
                     }
                     else
                     {
                         String url=txtUrl.getText().toString().replace(" ","+");
                         webView.loadUrl("https://google.com/search?q=" + url);
                     }
+
                     //txtUrl.requestFocus();
                     //txtUrl.setCursorVisible(false);
                     txtUrl.clearFocus();
@@ -456,7 +464,12 @@ public class MainActivity extends AppCompatActivity {
                 if (search.equals("Web"))
                 {
                     String url=txtUrl.getText().toString().replace(" ","");
-                    webView.loadUrl(url);
+                    if (URLUtil.isValidUrl(url))
+                        webView.loadUrl(url);
+                    else {
+                        url=txtUrl.getText().toString().replace(" ","+");
+                        webView.loadUrl("https://google.com/search?q=" + url);
+                    }
                 }
                 else
                 {
