@@ -1,6 +1,7 @@
 package com.hufi.webbrowser;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,12 @@ public class HistoryAdapter extends ArrayAdapter<History> {
 
         TextView lbTitle = convertView.findViewById(R.id.lbTitle);
         lbTitle.setText(title);
+
+        if (position % 2 == 1) {
+            convertView.setBackgroundColor(Color.parseColor("#505050"));
+        } else {
+            convertView.setBackgroundColor(Color.parseColor("#6c6c6c"));
+        }
 
         return convertView;
     }

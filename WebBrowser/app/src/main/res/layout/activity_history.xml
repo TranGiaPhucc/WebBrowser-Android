@@ -7,14 +7,28 @@
     android:background="#3C3C3C"
     tools:context=".HistoryActivity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Lịch sử"
+        android:textSize="25dp"
+        android:textColor="@color/white"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/titleHistory"/>
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/btnXoaLichSu"
         android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:scrollbars="vertical"
         android:divider="@null"
         android:dividerHeight="0dp"
+        android:layout_below="@id/titleHistory"
         android:id="@+id/listHistory" />
 
     <Button

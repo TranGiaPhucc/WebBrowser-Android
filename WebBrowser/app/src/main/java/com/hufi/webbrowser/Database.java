@@ -16,6 +16,7 @@ public class Database {
     private String dbName = "UserWebBrowser.db";
     private String dbTable = "NguoiDung";
     private String dbTableHistory = "History";
+    private String dbTableBookmark = "Bookmark";
 
     public Database(Context context)
     {
@@ -49,7 +50,29 @@ public class Database {
                 "url TEXT, " +
                 "title TEXT ) ";
         db.execSQL(sql);
+        sql = "create table if not exists Bookmark(" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "url TEXT, " +
+                "title TEXT ) ";
+        db.execSQL(sql);
         closeDB(db);
+    }
+
+    public ArrayList<Bookmark> getBookmarkAll()	{
+        SQLiteDatabase db =	openDB();
+        ArrayList<Bookmark>	arr =	new	ArrayList<>();
+        String	sql =	"select	*	from	Bookmark";
+        Cursor csr =	db.rawQuery(sql,	null);
+        if	(csr !=	null)	{
+            if	(csr.moveToFirst())	{
+                do	{
+                    String url = csr.getString(1);
+                    String title = csr.getString(2);
+                    arr.add(new	Bookmark(url, title));
+                }	while	(csr.moveToNext());
+            } }
+        closeDB(db);
+        return	arr;
     }
 
     public ArrayList<History> getHistoryAll()	{
@@ -163,6 +186,17 @@ public class Database {
         return count;
     }
 
+    public boolean insertBookmark(Bookmark b) {
+        boolean flag = false;
+        SQLiteDatabase db = openDB();
+        ContentValues cv = new ContentValues();
+        cv.put("url", b.getUrl());
+        cv.put("title", b.getTitle());
+        flag = db.insert(dbTableBookmark, null, cv) > 0;
+        closeDB(db);
+        return flag;
+    }
+
     public boolean insertHistory(History h) {
         boolean flag = false;
         SQLiteDatabase db = openDB();
@@ -267,10 +301,56 @@ public class Database {
         }
     }
 
+    public boolean checkBookmarkExist(String url){
+        String[] columns = {"url"};
+
+        SQLiteDatabase db = openDB();
+
+        String selection = "url = ?";
+        String[] selectionArgs = {url};
+
+        Cursor cursor = db.query(dbTableBookmark, columns, selection, selectionArgs, null, null, null);
+
+        int count = cursor.getCount();
+
+        cursor.close();
+        db.close();
+
+        if(count > 0){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void deleteHistory() {
         SQLiteDatabase db = openDB();
         db.delete(dbTableHistory, null, null);
         db.close();
+    }
+
+    public String getTitle(String url) {
+        String title = "";
+        SQLiteDatabase db =	openDB();
+        String[] fields = {"id", "url", "title"};
+        String[] ids = {url};
+        Cursor csr = db.query(dbTableHistory, fields, "url	=	?", ids, null, null, null, null);
+        if	(csr !=	null)	{
+            if	(csr.moveToFirst())	{
+                do	{
+                    title = csr.getString(2);
+                }	while	(csr.moveToNext());
+            }
+        }
+        closeDB(db);
+        return title;
+    }
+
+    public void deleteBookmark(String url) {
+        SQLiteDatabase db =	openDB();
+        String[] ids = {url};
+        db.delete(dbTableBookmark, "url = ?", ids);
+        closeDB(db);
     }
 
     public	String getLastUrl() {

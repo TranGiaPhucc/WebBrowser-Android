@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout customViewContainer;
     TextView txtUrl;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
-    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory;
+    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck;
     ListView listUrl;
     ArrayList<History> arrayList;
     Spinner spnSearch;
@@ -185,6 +185,8 @@ public class MainActivity extends AppCompatActivity {
         btnMaps=findViewById(R.id.btnMaps);
         btnPhoneDesktop=findViewById(R.id.btnPhoneDesktop);
         btnHistory=findViewById(R.id.btnHistory);
+        btnBookmark=findViewById(R.id.btnBookmark);
+        btnBookmarkCheck=findViewById(R.id.btnBookmarkCheck);
         prgBar=findViewById(R.id.prgBar);
         spnSearch=findViewById(R.id.spnSearch);
         refreshLayout=findViewById(R.id.refreshLayout);
@@ -458,6 +460,37 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnBookmark.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                txtUrl.clearFocus();
+                listUrl.setVisibility(View.GONE);
+                webView.requestFocus();
+
+                Intent intent = new Intent(MainActivity.this, BookmarkActivity.class);
+                startActivityForResult(intent, REQUEST_CODE);
+            }
+        });
+
+        btnBookmarkCheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String url = txtUrl.getText().toString();
+                if (!db.checkBookmarkExist(url)) {
+                    String title = db.getTitle(url);
+                    Bookmark b = new Bookmark(url, title);
+                    db.insertBookmark(b);
+                    btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_on);
+                    Toast.makeText(MainActivity.this,"Đã đánh dấu trang.",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    db.deleteBookmark(url);
+                    btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_off);
+                    Toast.makeText(MainActivity.this,"Đã xoá dấu trang.",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         btnGo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -572,6 +605,13 @@ public class MainActivity extends AppCompatActivity {
                     String title = view.getTitle();
                     History h = new History(url, title);
                     db.insertHistory(h);
+
+                    if(db.checkBookmarkExist(url)) {
+                        btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_on);
+                    }
+                    else {
+                        btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_off);
+                    }
 
                     AsyncTaskSQL runner = new AsyncTaskSQL();
                     runner.execute(url, title);

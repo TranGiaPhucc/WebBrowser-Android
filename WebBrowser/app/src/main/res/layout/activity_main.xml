@@ -24,19 +24,28 @@
         android:layout_marginTop="7dp"
         android:background="@android:drawable/ic_popup_sync" />
 
+    <ImageButton
+        android:id="@+id/btnBookmarkCheck"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="7dp"
+        android:layout_marginTop="7dp"
+        android:layout_toRightOf="@id/btnReload"
+        android:background="@android:drawable/btn_star_big_off" />
+
     <Spinner
         android:id="@+id/spnSearch"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginLeft="5dp"
         android:layout_toRightOf="@id/btnReload"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_toLeftOf="@id/btnGo"
-        android:layout_toRightOf="@id/btnReload"
+        android:layout_toRightOf="@id/btnBookmarkCheck"
         android:layout_marginRight="5dp"
         android:layout_marginLeft="5dp"
         android:selectAllOnFocus="true"
@@ -103,7 +112,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_below="@id/txtUrl"
-        android:layout_marginLeft="30dp"
+        android:layout_marginLeft="10dp"
         android:layout_toRightOf="@id/btnForward"
         android:gravity="center"
         android:text="G"
@@ -133,18 +142,27 @@
     <ImageButton
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_toLeftOf="@id/btnHistory"
+        android:layout_toLeftOf="@id/btnBookmark"
         android:layout_below="@id/btnGo"
         android:background="@android:drawable/ic_menu_always_landscape_portrait"
         android:id="@+id/btnPhoneDesktop" />
 
     <ImageButton
+        android:id="@+id/btnHistory"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_alignParentRight="true"
         android:layout_below="@id/btnGo"
-        android:background="@android:drawable/ic_menu_recent_history"
-        android:id="@+id/btnHistory" />
+        android:layout_alignParentRight="true"
+        android:background="@android:drawable/ic_menu_recent_history" />
+
+    <ImageButton
+        android:id="@+id/btnBookmark"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/btnGo"
+        android:layout_toLeftOf="@id/btnHistory"
+        android:background="@android:drawable/btn_star" />
+
 
     <ProgressBar
         android:id="@+id/prgBar"

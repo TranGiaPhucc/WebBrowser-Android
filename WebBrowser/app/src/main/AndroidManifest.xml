@@ -20,7 +20,7 @@
 
     <application
         android:allowBackup="true"
-        android:largeHeap="true"
+        android:largeHeap="false"
         android:icon="@mipmap/ic_launcher"
         android:label="WebBrowser"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -58,7 +58,10 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/new_app_widget_info" />
         </receiver>
-
+        <activity
+            android:name=".BookmarkActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false" />
         <activity
             android:name=".HistoryActivity"
             android:configChanges="orientation|screenSize"
