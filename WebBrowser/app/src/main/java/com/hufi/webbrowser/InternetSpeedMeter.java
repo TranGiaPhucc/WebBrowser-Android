@@ -108,14 +108,6 @@ public class InternetSpeedMeter extends Service {
 
     private void start()
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_HIGH);
-            channel.setVibrationPattern(new long[]{ 0 });
-            channel.enableVibration(true);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-
         mStartRX = TrafficStats.getTotalRxBytes();
         mStartTX = TrafficStats.getTotalTxBytes();
 
@@ -204,15 +196,30 @@ public class InternetSpeedMeter extends Service {
                 .isConnectedOrConnecting();
         if (is3g || isWifi) {*/
             //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
-            startForeground(1, new NotificationCompat.Builder(this, "My notification")
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_HIGH);
+            channel.setVibrationPattern(new long[]{ 0 });
+            channel.enableVibration(false);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+
+            NotificationCompat.Builder noti = new NotificationCompat.Builder(this, "My notification")
                     //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
                     .setContentTitle("Connection type: " + connectionType)
                     .setContentText(contentText)
                     //builder.setSmallIcon(R.mipmap.ic_launcher_round);
                     .setSmallIcon(IconCompat.createFromIcon(icon))
                     .setAutoCancel(false)
-                    .setOnlyAlertOnce(true)
-                    .build());
+                    .setOnlyAlertOnce(true);
+
+            //notificationManager.notify(1, noti.build());
+
+            startForeground(1, noti.build());
+        }
+
         /*}
         else {
             stopForeground(true);

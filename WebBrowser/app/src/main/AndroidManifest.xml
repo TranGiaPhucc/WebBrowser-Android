@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.hufi.webbrowser">
+    package="com.hufi.webbrowser" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -26,16 +26,26 @@
         android:largeHeap="false"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WebBrowser">
+        android:theme="@style/Theme.WebBrowser" >
+        <service
+            android:name=".Sensor2"
+            android:enabled="false"
+            android:exported="true" >
+        </service>
+        <service
+            android:name=".Sensor1"
+            android:enabled="false"
+            android:exported="true" >
+        </service>
         <service
             android:name=".Sensor"
-            android:enabled="true"
-            android:exported="true"></service>
+            android:enabled="false"
+            android:exported="true" />
 
         <receiver
             android:name=".InternetSpeedMeterAutoStart"
             android:enabled="true"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -51,12 +61,11 @@
 
         <activity
             android:name=".Maps"
-            android:configChanges="orientation|screenSize"
             android:exported="false" />
 
         <receiver
             android:name=".NewAppWidget"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -68,11 +77,9 @@
 
         <activity
             android:name=".BookmarkActivity"
-            android:configChanges="orientation|screenSize"
             android:exported="false" />
         <activity
             android:name=".HistoryActivity"
-            android:configChanges="orientation|screenSize"
             android:exported="false" />
         <activity
             android:name=".Register"
@@ -83,8 +90,7 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

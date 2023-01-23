@@ -118,6 +118,16 @@ public class MainActivity extends AppCompatActivity {
             startService(new Intent(this, Sensor.class));
         }
 
+        if (!isMyServiceRunning(Sensor1.class))
+        {
+            startService(new Intent(this, Sensor1.class));
+        }
+
+        if (!isMyServiceRunning(Sensor2.class))
+        {
+            startService(new Intent(this, Sensor2.class));
+        }
+
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_LOW);
             channel.setVibrationPattern(new long[]{ 0 });
@@ -1096,7 +1106,6 @@ public class MainActivity extends AppCompatActivity {
             listUrl.setVisibility(View.GONE);
             webView.requestFocus();
         }
-        //
         else {
             super.onBackPressed();
         }

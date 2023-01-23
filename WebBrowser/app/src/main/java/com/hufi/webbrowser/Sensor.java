@@ -1,12 +1,10 @@
 package com.hufi.webbrowser;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -15,20 +13,12 @@ import android.graphics.drawable.Icon;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.ConnectivityManager;
-import android.net.TrafficStats;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.graphics.drawable.IconCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Sensor extends Service implements SensorEventListener {
 
@@ -51,9 +41,10 @@ public class Sensor extends Service implements SensorEventListener {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() != android.hardware.Sensor.TYPE_LIGHT) return;
 
+        if (event.sensor.getType() != android.hardware.Sensor.TYPE_LIGHT) return;
         lightValue = (int) event.values[0];
+
         showNotification();
     }
 
@@ -63,10 +54,7 @@ public class Sensor extends Service implements SensorEventListener {
         sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         light = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_LIGHT);
 
-        if (light == null) {
-            Toast.makeText(this, "No sensor found.", Toast.LENGTH_SHORT).show();
-        }
-        else {
+        if (light != null) {
             sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_NORMAL);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -80,15 +68,8 @@ public class Sensor extends Service implements SensorEventListener {
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void start()
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification light", "My notification light", NotificationManager.IMPORTANCE_HIGH);
-            channel.setVibrationPattern(new long[]{ 0 });
-            channel.enableVibration(true);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
         showNotification();
-        //mHandler.postDelayed(mRunnable, 1500);
+        //mHandler.postDelayed(mRunnable, 1000);
     }
 /*
     private final Runnable mRunnable = new Runnable() {
@@ -97,7 +78,7 @@ public class Sensor extends Service implements SensorEventListener {
 
             showNotification();
 
-            mHandler.postDelayed(mRunnable, 1500);
+            mHandler.postDelayed(mRunnable, 1000);
         }
     };*/
 
@@ -110,19 +91,31 @@ public class Sensor extends Service implements SensorEventListener {
 
         Bitmap bitmap = createBitmapFromString(Integer.toString(lightValue), "lux");
         Icon icon = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             icon = Icon.createWithBitmap(bitmap);
         }
 
-        startForeground(2, new NotificationCompat.Builder(this, "My notification light")
-                //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
-                .setContentTitle("Light Sensor")
-                .setContentText(contentText)
-                //builder.setSmallIcon(R.mipmap.ic_launcher_round);
-                .setSmallIcon(IconCompat.createFromIcon(icon))
-                .setAutoCancel(false)
-                .setOnlyAlertOnce(true)
-                .build());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("My notification light", "My notification light", NotificationManager.IMPORTANCE_HIGH);
+            channel.setVibrationPattern(new long[]{ 0 });
+            channel.enableVibration(false);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+
+            NotificationCompat.Builder noti = new NotificationCompat.Builder(this, "My notification light")
+                    //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
+                    .setContentTitle("Light Sensor")
+                    .setContentText(contentText)
+                    //builder.setSmallIcon(R.mipmap.ic_launcher_round);
+                    .setSmallIcon(IconCompat.createFromIcon(icon))
+                    .setAutoCancel(false)
+                    .setOnlyAlertOnce(true);
+
+            //notificationManager.notify(2, noti.build());
+
+            startForeground(2, noti.build());
+        }
     }
 
     private Bitmap createBitmapFromString(String speed, String units) {
