@@ -100,11 +100,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (!isMyServiceRunning(Sensor.class))
-        {
-            startService(new Intent(this, Sensor.class));
-        }
-
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
             CheckConnection.ShowToast_Short(getApplicationContext(), "No internet connection.");
             //stopService(new Intent(this, InternetSpeedMeter.class));
@@ -116,6 +111,11 @@ public class MainActivity extends AppCompatActivity {
             {
                 startService(new Intent(this, InternetSpeedMeter.class));
             }
+        }
+
+        if (!isMyServiceRunning(Sensor.class))
+        {
+            startService(new Intent(this, Sensor.class));
         }
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

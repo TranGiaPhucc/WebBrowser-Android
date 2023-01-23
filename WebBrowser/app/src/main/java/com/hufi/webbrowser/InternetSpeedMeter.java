@@ -83,25 +83,12 @@ public class InternetSpeedMeter extends Service {
                 boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
                         .isConnectedOrConnecting();
 
-
                 if (!is3g && !isWifi)
                 {
-                    /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        NotificationManager notifManager= getSystemService(NotificationManager.class);
-                        notifManager.cancelAll();
-                    }
-                    mHandler.removeCallbacks(mRunnable);
-                    checkHandlerOn = false;*/
-
                     connectionType = "No internet connection";
                 }
                 else
                 {
-                    /*if (checkHandlerOn == false) {
-                        mHandler.postDelayed(mRunnable, 0);
-                        checkHandlerOn = true;
-                    }*/
-
                     if (is3g)
                         connectionType = "MOBILE";
                     if (isWifi)

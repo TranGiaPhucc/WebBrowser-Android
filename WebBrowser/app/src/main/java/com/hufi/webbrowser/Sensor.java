@@ -32,7 +32,7 @@ import java.util.TimerTask;
 
 public class Sensor extends Service implements SensorEventListener {
 
-    private Handler mHandler = new Handler();
+    //private Handler mHandler = new Handler();
 
     private SensorManager sensorManager;
     private android.hardware.Sensor light;
@@ -49,10 +49,12 @@ public class Sensor extends Service implements SensorEventListener {
 
     public void onAccuracyChanged(android.hardware.Sensor sensor, int accuracy) {}
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() != android.hardware.Sensor.TYPE_LIGHT) return;
 
         lightValue = (int) event.values[0];
+        showNotification();
     }
 
     @Override
@@ -72,41 +74,41 @@ public class Sensor extends Service implements SensorEventListener {
             }
         }
 
-
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void start()
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification light", "My notification light", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel = new NotificationChannel("My notification light", "My notification light", NotificationManager.IMPORTANCE_HIGH);
             channel.setVibrationPattern(new long[]{ 0 });
             channel.enableVibration(true);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
-
-        mHandler.postDelayed(mRunnable, 1000);
+        showNotification();
+        //mHandler.postDelayed(mRunnable, 1500);
     }
-
+/*
     private final Runnable mRunnable = new Runnable() {
         @RequiresApi(api = Build.VERSION_CODES.M)
         public void run() {
 
             showNotification();
 
-            mHandler.postDelayed(mRunnable, 1000);
+            mHandler.postDelayed(mRunnable, 1500);
         }
-    };
+    };*/
 
     @SuppressLint("RestrictedApi")
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void showNotification() {
         // TODO Auto-generated method stub
 
-        String contentText = "Light: "  + lightValue + " lx";
+        String contentText = "Light: "  + lightValue + " lux";
 
-        Bitmap bitmap = createBitmapFromString(String.valueOf(lightValue), "lx");
+        Bitmap bitmap = createBitmapFromString(Integer.toString(lightValue), "lux");
         Icon icon = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             icon = Icon.createWithBitmap(bitmap);
