@@ -11,11 +11,16 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Icon;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
 import android.net.TrafficStats;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -33,8 +38,6 @@ public class InternetSpeedMeter extends Service {
     private long mStartTX = 0;
     public static long txBytes = 0;
     public static long rxBytes = 0;
-
-    //private boolean checkHandlerOn = false;
 
     public InternetSpeedMeter() {
     }
@@ -119,7 +122,7 @@ public class InternetSpeedMeter extends Service {
     private void start()
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_MAX);
+            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_HIGH);
             channel.setVibrationPattern(new long[]{ 0 });
             channel.enableVibration(true);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);

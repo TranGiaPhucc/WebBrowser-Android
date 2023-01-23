@@ -100,6 +100,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (!isMyServiceRunning(Sensor.class))
+        {
+            startService(new Intent(this, Sensor.class));
+        }
+
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
             CheckConnection.ShowToast_Short(getApplicationContext(), "No internet connection.");
             //stopService(new Intent(this, InternetSpeedMeter.class));
@@ -672,6 +677,12 @@ public class MainActivity extends AppCompatActivity {
                 prgBar.setProgress(progress);
             }
 
+            @Override
+            public void onReceivedIcon(WebView view, Bitmap icon) {
+                super.onReceivedIcon(view, icon);
+                //webImage.setImageBitmap(icon);
+            }
+
             public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
                 super.onShowCustomView(view,callback);
                 webView.setVisibility(View.GONE);
@@ -1085,9 +1096,10 @@ public class MainActivity extends AppCompatActivity {
             listUrl.setVisibility(View.GONE);
             webView.requestFocus();
         }
-        /*else {
+        //
+        else {
             super.onBackPressed();
-        }*/
+        }
     }
 
     @Override
