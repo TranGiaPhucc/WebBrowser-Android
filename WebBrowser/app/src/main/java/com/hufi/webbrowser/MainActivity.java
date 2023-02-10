@@ -1,14 +1,12 @@
 package com.hufi.webbrowser;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -16,7 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -34,11 +32,15 @@ import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -47,10 +49,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +63,9 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     SwipeRefreshLayout refreshLayout;
     FrameLayout customViewContainer;
-    TextView txtUrl;
+    EditText txtUrl;
+    TextView txtMemory, txtAdblock;
+    CheckBox cbxAd;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
     ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck;
     ListView listUrl;
@@ -71,6 +77,10 @@ public class MainActivity extends AppCompatActivity {
     private List<String> list;
     private WebView webView;
     private String search = "";
+
+    boolean adCheck = false;
+    int adblockCount = 0;
+    int linkCount = 0;
 
     //Upload
     public Context context;
@@ -89,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri[]> mUploadMessage;
     private final int REQUEST_CODE = 103;
 
-    //private Handler mHandler = new Handler();
+    private Handler mHandler = new Handler();
     //private long mStartRX = 0;
     //private long mStartTX = 0;
     //private long txBytes = 0;
@@ -99,34 +109,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
-            CheckConnection.ShowToast_Short(getApplicationContext(), "No internet connection.");
-            //stopService(new Intent(this, InternetSpeedMeter.class));
-            //mHandler.removeCallbacks(mRunnable);
-            //finish();
-        }
-        else {
-            if (!isMyServiceRunning(InternetSpeedMeter.class))
-            {
-                startService(new Intent(this, InternetSpeedMeter.class));
-            }
-        }
-
-        if (!isMyServiceRunning(Sensor.class))
-        {
-            startService(new Intent(this, Sensor.class));
-        }
-
-        if (!isMyServiceRunning(Sensor1.class))
-        {
-            startService(new Intent(this, Sensor1.class));
-        }
-
-        if (!isMyServiceRunning(Sensor2.class))
-        {
-            startService(new Intent(this, Sensor2.class));
-        }
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_LOW);
@@ -148,7 +130,13 @@ public class MainActivity extends AppCompatActivity {
             mHandler.postDelayed(mRunnable, 0);
         }*/
 
-        //mHandler.postDelayed(mRunnable, 0);
+        try {
+            AdBlocker.loadFromAssets(getApplicationContext());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mHandler.postDelayed(mRunnable, 1000);
 
         //Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -161,11 +149,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         NguoiDung n = db.getNguoiDung("admin");
-        //Toast.makeText(MainActivity.this, "Bạn đã duyệt " + n.getWebcount() + " trang web.", Toast.LENGTH_SHORT).show();
+        n.webcount = db.countHistory();
+        db.update(n);
 
         Toast.makeText(MainActivity.this, "Bạn đã duyệt " + db.countHistory() + " trang web.", Toast.LENGTH_SHORT).show();
 
         webView=findViewById(R.id.webView);
+
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
         webView.getSettings().setJavaScriptEnabled(true);
@@ -176,7 +166,28 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setDisplayZoomControls(false);
         webView.getSettings().setDatabaseEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
+        webView.getSettings().setAllowContentAccess(true);
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setAppCacheMaxSize( 100 * 1024 * 1024 ); // 100MB (default: 5MB)
+        webView.getSettings().setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
+        webView.getSettings().setAppCacheEnabled(true);
+        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        webView.getSettings().setSupportMultipleWindows(true);
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         //webView.loadUrl("https://www.google.com");
+
+        if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
+            CheckConnection.ShowToast_Short(getApplicationContext(), "Không có kết nối mạng.");
+            //stopService(new Intent(this, InternetSpeedMeter.class));
+            //mHandler.removeCallbacks(mRunnable);
+            //finish();
+        }
+        else {
+            if (!isMyServiceRunning(InternetSpeedMeter.class))
+            {
+                startService(new Intent(this, InternetSpeedMeter.class));
+            }
+        }
 
         if (db.isHistoryEmpty() == true)
         {
@@ -189,6 +200,9 @@ public class MainActivity extends AppCompatActivity {
 
         customViewContainer = findViewById(R.id.customViewContainer);
 
+        cbxAd=findViewById(R.id.cbxAd);
+        txtAdblock=findViewById(R.id.txtAdblock);
+        txtMemory=findViewById(R.id.txtMemory);
         txtUrl=findViewById(R.id.txtUrl);
         listUrl=findViewById(R.id.listUrl);
         btnReload=findViewById(R.id.btnReload);
@@ -287,6 +301,21 @@ public class MainActivity extends AppCompatActivity {
                 search = "Web";
                 txtUrl.setText("");
                 txtUrl.setHint("https://www.google.com");
+            }
+        });
+
+        cbxAd.setChecked(false);
+        cbxAd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    adCheck = true;
+                    Toast.makeText(MainActivity.this, "Ads enabled.", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    adCheck = false;
+                    Toast.makeText(MainActivity.this, "Ads disabled.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -591,8 +620,6 @@ public class MainActivity extends AppCompatActivity {
                 //Log.e("URL", url);
                 //txtUrl.setText(url);
 
-
-
                 prgBar.setVisibility(View.VISIBLE);
             }
 
@@ -610,13 +637,6 @@ public class MainActivity extends AppCompatActivity {
 
                 if (!urlCheck.equals(txtUrl.getText().toString()))
                 {
-                    //String username = getIntent().getStringExtra("username");
-                    //NguoiDung nd = db.getNguoiDung(username);
-                    NguoiDung nd = db.getNguoiDung("admin");
-                    int webCount = nd.getWebcount() + 1;
-                    nd.webcount = webCount;
-                    db.update(nd);
-
                     String title = view.getTitle();
                     History h = new History(url, title);
                     db.insertHistory(h);
@@ -644,16 +664,16 @@ public class MainActivity extends AppCompatActivity {
                     }*/
                 }
             }
-
+            /*
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                /*if (url.endsWith(".mp4")) {
+                if (url.endsWith(".mp4")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(Uri.parse(url), "video/*");
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     view.getContext().startActivity(intent);
                     return true;
-                } else*/
+                } else
                     if (url.startsWith("tel:") || url.startsWith("sms:") || url.startsWith("smsto:")
                         || url.startsWith("mms:") || url.startsWith("mmsto:")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -663,17 +683,24 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     return super.shouldOverrideUrlLoading(view, url);
                 }
-            }
+            }*/
 
             private Map<String, Boolean> loadedUrls = new HashMap<>();
-
-            @SuppressWarnings("deprecation")
+            @Nullable
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                if (adCheck == true)
+                    return super.shouldInterceptRequest(view, url);
+
                 boolean ad;
                 if (!loadedUrls.containsKey(url)) {
                     ad = AdBlocker.isAd(url);
-                    loadedUrls.put(url, ad);
+                    //loadedUrls.put(url, ad);
+                    //linkCount++;
+                    if (ad == true) {
+                        adblockCount++;
+                        loadedUrls.put(url, ad);
+                    }
                 } else {
                     ad = loadedUrls.get(url);
                 }
@@ -885,95 +912,20 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
-/*
+
     private final Runnable mRunnable = new Runnable() {
         public void run() {
-            TextView RX = (TextView) findViewById(R.id.txtDownloadSpeed);
-            TextView TX = (TextView) findViewById(R.id.txtUploadSpeed);
+            final Runtime runtime = Runtime.getRuntime();
+            final long usedMemInMB=(runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
+            final long maxHeapSizeInMB=runtime.maxMemory() / 1048576L;
+            final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
 
-            String downloadSpeed, downloadUnit, uploadSpeed, uploadUnit;
-            String contentDownload, contentUpload;
+            txtMemory.setText("Mem: " + usedMemInMB + "MB");
+            txtAdblock.setText("Ads: " + adblockCount);
 
-            //rxBytes = (TrafficStats.getTotalRxBytes() - mStartRX)/1024;        //KBps
-            if (InternetSpeedMeter.rxBytes < 1000) {
-                downloadSpeed = Long.toString(InternetSpeedMeter.rxBytes);
-                downloadUnit = "KB/s";
-            }
-            else {
-                downloadSpeed = Double.toString((double)Math.round((double)InternetSpeedMeter.rxBytes / 1000 * 10) / 10);
-                downloadUnit = "MB/s";
-            }
-            contentDownload = "Download: " + downloadSpeed + " " + downloadUnit;
-            RX.setText(contentDownload);
-
-            //txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
-            if (InternetSpeedMeter.txBytes < 1000) {
-                uploadSpeed = Long.toString(InternetSpeedMeter.txBytes);
-                uploadUnit = "KB/s";
-            }
-            else {
-                uploadSpeed = Double.toString((double)Math.round((double)InternetSpeedMeter.txBytes / 1000 * 10) / 10);
-                uploadUnit = "MB/s";
-            }
-            contentUpload = "Upload: " + uploadSpeed + " " + uploadUnit;
-            TX.setText(contentUpload);
-
-            //showNotification();
-
-            //mStartRX = TrafficStats.getTotalRxBytes();
-            //mStartTX = TrafficStats.getTotalTxBytes();
-
-            mHandler.postDelayed(mRunnable, 0);
+            mHandler.postDelayed(mRunnable, 1000);
         }
     };
-*/
-    /*private void showNotification() {
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "My notification");
-        builder.setContentTitle("Internet Speed Meter");
-        builder.setContentText("Upload: " + Long.toString(txBytes) + " KBps        Download: " + Long.toString(rxBytes) + " KBps");
-        //builder.setSmallIcon(R.mipmap.ic_launcher_round);
-        Bitmap bitmap = createBitmapFromString(Long.toString(rxBytes), " KB/s");
-        Icon icon = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            icon = Icon.createWithBitmap(bitmap);
-        }
-        builder.setSmallIcon(IconCompat.createFromIcon(icon));
-        builder.setAutoCancel(false);
-        builder.setOnlyAlertOnce(true);
-        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(MainActivity.this);
-        managerCompat.notify(1, builder.build());
-    }
-
-    private Bitmap createBitmapFromString(String speed, String units) {
-
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setTextSize(55);
-        paint.setTextAlign(Paint.Align.CENTER);
-
-        Paint unitsPaint = new Paint();
-        unitsPaint.setAntiAlias(true);
-        unitsPaint.setTextSize(40); // size is in pixels
-        unitsPaint.setTextAlign(Paint.Align.CENTER);
-
-        Rect textBounds = new Rect();
-        paint.getTextBounds(speed, 0, speed.length(), textBounds);
-
-        Rect unitsTextBounds = new Rect();
-        unitsPaint.getTextBounds(units, 0, units.length(), unitsTextBounds);
-
-        int width = (textBounds.width() > unitsTextBounds.width()) ? textBounds.width() : unitsTextBounds.width();
-
-        Bitmap bitmap = Bitmap.createBitmap(width + 10, 90,
-                Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawText(speed, width / 2 + 5, 50, paint);
-        canvas.drawText(units, width / 2, 90, unitsPaint);
-
-        return bitmap;
-    }*/
 
     @Override
     public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo){
@@ -1049,7 +1001,7 @@ public class MainActivity extends AppCompatActivity {
                 downloadSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
                 downloadUnit = "MB/s";
             }
-            contentDownload = "Download: " + downloadSpeed + " " + downloadUnit;
+            contentDownload = "↓: " + downloadSpeed + " " + downloadUnit;
             RX.setText(contentDownload);
 
             //txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
@@ -1061,7 +1013,7 @@ public class MainActivity extends AppCompatActivity {
                 uploadSpeed = Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10);
                 uploadUnit = "MB/s";
             }
-            contentUpload = "Upload: " + uploadSpeed + " " + uploadUnit;
+            contentUpload = "↑: " + uploadSpeed + " " + uploadUnit;
             TX.setText(contentUpload);
         }
     };

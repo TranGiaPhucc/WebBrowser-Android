@@ -199,7 +199,7 @@ public class InternetSpeedMeter extends Service {
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_MAX);
             channel.setVibrationPattern(new long[]{ 0 });
             channel.enableVibration(false);
 

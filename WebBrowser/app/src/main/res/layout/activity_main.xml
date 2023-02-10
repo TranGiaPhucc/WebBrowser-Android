@@ -20,16 +20,16 @@
         android:id="@+id/btnReload"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginLeft="7dp"
-        android:layout_marginTop="7dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
         android:background="@android:drawable/ic_popup_sync" />
 
     <ImageButton
         android:id="@+id/btnBookmarkCheck"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginLeft="7dp"
-        android:layout_marginTop="7dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="5dp"
         android:layout_toRightOf="@id/btnReload"
         android:background="@android:drawable/btn_star_big_off" />
 
@@ -42,21 +42,21 @@
         android:visibility="invisible" />
 
     <EditText
+        android:id="@+id/txtUrl"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="5dp"
         android:layout_toLeftOf="@id/btnGo"
         android:layout_toRightOf="@id/btnBookmarkCheck"
-        android:layout_marginRight="5dp"
-        android:layout_marginLeft="5dp"
-        android:selectAllOnFocus="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:hint="https://www.google.com"
-        android:textColorHint="#4DFFFFFF"
-        android:textSize="15dp"
-        android:textColor="#CCFFFFFF"
         android:inputType="textUri"
-        android:id="@+id/txtUrl"/>
+        android:selectAllOnFocus="true"
+        android:textColor="#CCFFFFFF"
+        android:textColorHint="#4DFFFFFF"
+        android:textSize="15dp" />
 
     <ListView
         android:layout_width="match_parent"
@@ -75,42 +75,42 @@
 
     <Button
         android:id="@+id/btnGo"
-        android:layout_width="65dp"
+        android:layout_width="55dp"
         android:layout_height="40dp"
-        android:layout_marginRight="5dp"
         android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp"
         android:text="Go"
         android:textAllCaps="false"
         android:textColor="@color/black"
         android:textSize="15dp" />
 
     <Button
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginLeft="5dp"
+        android:id="@+id/btnBack"
+        android:layout_width="38dp"
+        android:layout_height="35dp"
         android:layout_below="@id/spnSearch"
+        android:layout_marginLeft="5dp"
         android:gravity="center"
-        android:textSize="10dp"
         android:text="↶"
         android:textColor="@color/black"
-        android:id="@+id/btnBack"/>
+        android:textSize="10dp" />
 
     <Button
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:id="@+id/btnForward"
+        android:layout_width="38dp"
+        android:layout_height="35dp"
+        android:layout_below="@id/spnSearch"
         android:layout_marginLeft="5dp"
         android:layout_toRightOf="@id/btnBack"
-        android:layout_below="@id/spnSearch"
         android:gravity="center"
-        android:textSize="10dp"
         android:text="↷"
         android:textColor="@color/black"
-        android:id="@+id/btnForward"/>
+        android:textSize="10dp" />
 
     <Button
         android:id="@+id/btnGoogle"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="38dp"
+        android:layout_height="35dp"
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="10dp"
         android:layout_toRightOf="@id/btnForward"
@@ -121,8 +121,8 @@
 
     <Button
         android:id="@+id/btnYoutube"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="38dp"
+        android:layout_height="35dp"
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="5dp"
         android:layout_toRightOf="@id/btnGoogle"
@@ -132,33 +132,33 @@
         android:textSize="10dp" />
 
     <ImageButton
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_toLeftOf="@id/btnPhoneDesktop"
+        android:id="@+id/btnMaps"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_below="@id/btnGo"
-        android:background="@android:drawable/ic_dialog_map"
-        android:id="@+id/btnMaps" />
+        android:layout_toLeftOf="@id/btnPhoneDesktop"
+        android:background="@android:drawable/ic_dialog_map" />
 
     <ImageButton
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_toLeftOf="@id/btnBookmark"
+        android:id="@+id/btnPhoneDesktop"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_below="@id/btnGo"
-        android:background="@android:drawable/ic_menu_always_landscape_portrait"
-        android:id="@+id/btnPhoneDesktop" />
+        android:layout_toLeftOf="@id/btnBookmark"
+        android:background="@android:drawable/ic_menu_always_landscape_portrait" />
 
     <ImageButton
         android:id="@+id/btnHistory"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_below="@id/btnGo"
         android:layout_alignParentRight="true"
         android:background="@android:drawable/ic_menu_recent_history" />
 
     <ImageButton
         android:id="@+id/btnBookmark"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_below="@id/btnGo"
         android:layout_toLeftOf="@id/btnHistory"
         android:background="@android:drawable/btn_star" />
@@ -199,22 +199,52 @@
         android:visibility="visible" />
 
     <TextView
+        android:id="@+id/txtUploadSpeed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
-        android:text="Upload: 0 Kbps"
-        android:layout_marginLeft="30dp"
-        android:textColor="#4DFFFFFF"
-        android:id="@+id/txtUploadSpeed"/>
+        android:layout_marginLeft="20dp"
+        android:text="↑: 0 KBps"
+        android:textColor="#4DFFFFFF" />
 
     <TextView
         android:id="@+id/txtDownloadSpeed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="30dp"
-        android:text="Download: 0 Kbps"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/txtUploadSpeed"
+        android:text="↓: 0 KBps"
         android:textColor="#4DFFFFFF" />
+
+    <TextView
+        android:id="@+id/txtMemory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnBack"
+        android:layout_marginRight="20dp"
+        android:layout_alignParentRight="true"
+        android:text="Mem 0MB"
+        android:textColor="#4DFFFFFF"/>
+
+    <TextView
+        android:id="@+id/txtAdblock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnBack"
+        android:layout_toLeftOf="@id/txtMemory"
+        android:layout_marginRight="20dp"
+        android:text="Ads: 0"
+        android:textColor="#4DFFFFFF" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_below="@id/txtUrl"
+        android:layout_marginLeft="5dp"
+        android:layout_toRightOf="@id/btnYoutube"
+        android:text="Ad"
+        android:textColor="#4DFFFFFF"
+        android:id="@+id/cbxAd" />
 
 </RelativeLayout>
