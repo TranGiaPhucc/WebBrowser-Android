@@ -323,7 +323,7 @@ public class Database {
         }
     }
 
-    public void deleteHistory() {
+    public void deleteHistoryAll() {
         SQLiteDatabase db = openDB();
         db.delete(dbTableHistory, null, null);
         db.close();
@@ -351,6 +351,12 @@ public class Database {
         String[] ids = {url};
         db.delete(dbTableBookmark, "url = ?", ids);
         closeDB(db);
+    }
+
+    public void deleteBookmarkAll() {
+        SQLiteDatabase db = openDB();
+        db.delete(dbTableBookmark, null, null);
+        db.close();
     }
 
     public	String getLastUrl() {

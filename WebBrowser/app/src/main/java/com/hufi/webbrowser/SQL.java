@@ -102,6 +102,46 @@ public class SQL {
         }
     }
 
+    public void insertBookmark(String url, String title) {
+        if (connection == null)
+            return;
+
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.executeQuery("insert into Bookmark values ('" + url + "', N'" + title + "')" +
+                    "where not exists (select * from Bookmark where url = '" + url + "'");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteBookmark(String url) {
+        if (connection == null)
+            return;
+
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.executeQuery("delete from Bookmark where url = '" + url + "'");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteBookmarkAll() {
+        if (connection == null)
+            return;
+
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.executeQuery("delete from Bookmark");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public  ArrayList<History> loadHistorySQL() throws SQLException {
         ArrayList<History> list = new ArrayList<>();
         Statement statement = connection.createStatement();// Tạo đối tượng Statement.
@@ -110,6 +150,19 @@ public class SQL {
         ResultSet rs = statement.executeQuery(sql);
         while (rs.next()) {
             list.add(new History(rs.getString("url"), rs.getString("title")));
+        }
+        //connection.close();// Đóng kết nối
+        return list;
+    }
+
+    public  ArrayList<Bookmark> loadBookmarkSQL() throws SQLException {
+        ArrayList<Bookmark> list = new ArrayList<>();
+        Statement statement = connection.createStatement();// Tạo đối tượng Statement.
+        String sql = "select * from Bookmark";
+        // Thực thi câu lệnh SQL trả về đối tượng ResultSet. // Mọi kết quả trả về sẽ được lưu trong ResultSet
+        ResultSet rs = statement.executeQuery(sql);
+        while (rs.next()) {
+            list.add(new Bookmark(rs.getString("url"), rs.getString("title")));
         }
         //connection.close();// Đóng kết nối
         return list;

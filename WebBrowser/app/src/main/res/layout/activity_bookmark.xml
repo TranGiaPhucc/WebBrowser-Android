@@ -30,4 +30,27 @@
         android:layout_below="@id/titleBookmark"
         android:id="@+id/listBookmark" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentBottom="true"
+        android:text="Load từ SQL"
+        android:textAllCaps="false"
+        android:id="@+id/btnLoadSQL" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:text="Xoá tất cả"
+        android:textAllCaps="false"
+        android:id="@+id/btnXoaDauTrang" />
+
 </RelativeLayout>

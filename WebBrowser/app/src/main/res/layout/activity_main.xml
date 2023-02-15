@@ -115,6 +115,7 @@
         android:layout_marginLeft="10dp"
         android:layout_toRightOf="@id/btnForward"
         android:gravity="center"
+        android:visibility="gone"
         android:text="G"
         android:textColor="@color/black"
         android:textSize="10dp" />
@@ -234,17 +235,27 @@
         android:layout_below="@id/btnBack"
         android:layout_toLeftOf="@id/txtMemory"
         android:layout_marginRight="20dp"
-        android:text="Ads: 0"
+        android:text="AD: 0"
         android:textColor="#4DFFFFFF" />
 
     <CheckBox
+        android:id="@+id/cbxAd"
         android:layout_width="wrap_content"
         android:layout_height="35dp"
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="5dp"
         android:layout_toRightOf="@id/btnYoutube"
-        android:text="Ad"
-        android:textColor="#4DFFFFFF"
-        android:id="@+id/cbxAd" />
+        android:text="AD"
+        android:textColor="#4DFFFFFF" />
+
+    <CheckBox
+        android:id="@+id/cbxInternetSpeedMeter"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_below="@id/txtUrl"
+        android:layout_marginLeft="5dp"
+        android:layout_toRightOf="@id/cbxAd"
+        android:text="IS"
+        android:textColor="#4DFFFFFF" />
 
 </RelativeLayout>

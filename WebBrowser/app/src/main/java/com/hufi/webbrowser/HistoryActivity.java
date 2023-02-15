@@ -57,7 +57,7 @@ public class HistoryActivity extends AppCompatActivity {
         btnXoa.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.deleteHistory();
+                db.deleteHistoryAll();
                 NguoiDung nd = db.getNguoiDung("admin");
                 nd.webcount = 0;
                 db.update(nd);

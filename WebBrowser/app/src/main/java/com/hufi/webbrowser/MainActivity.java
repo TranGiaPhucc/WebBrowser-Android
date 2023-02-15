@@ -1,5 +1,7 @@
 package com.hufi.webbrowser;
 
+import static androidx.core.app.ActivityCompat.startActivityForResult;
+
 import android.Manifest;
 import android.app.ActivityManager;
 import android.app.DownloadManager;
@@ -15,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout customViewContainer;
     EditText txtUrl;
     TextView txtMemory, txtAdblock;
-    CheckBox cbxAd;
+    CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
     ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck;
     ListView listUrl;
@@ -168,10 +171,10 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setGeolocationEnabled(true);
         webView.getSettings().setAllowContentAccess(true);
         webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setAppCacheMaxSize( 100 * 1024 * 1024 ); // 100MB (default: 5MB)
+        webView.getSettings().setAppCacheMaxSize( 1024 * 1024 * 1024 ); // 1GB (default: 5MB)
         webView.getSettings().setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
         webView.getSettings().setAppCacheEnabled(true);
-        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         //webView.loadUrl("https://www.google.com");
@@ -200,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
 
         customViewContainer = findViewById(R.id.customViewContainer);
 
+        cbxInternetSpeedMeter=findViewById(R.id.cbxInternetSpeedMeter);
         cbxAd=findViewById(R.id.cbxAd);
         txtAdblock=findViewById(R.id.txtAdblock);
         txtMemory=findViewById(R.id.txtMemory);
@@ -226,6 +230,25 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             // TODO: handle exception
         }
+
+        if (!isMyServiceRunning(InternetSpeedMeter.class))
+        {
+            cbxInternetSpeedMeter.setChecked(false);
+        }
+        else
+            cbxInternetSpeedMeter.setChecked(true);
+
+        cbxInternetSpeedMeter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    if (!isMyServiceRunning(InternetSpeedMeter.class))
+                        startService(new Intent(MainActivity.this, InternetSpeedMeter.class));
+                }
+                else
+                    stopService(new Intent(MainActivity.this, InternetSpeedMeter.class));
+            }
+        });
 
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -528,6 +551,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this,"Đã đánh dấu trang.",Toast.LENGTH_SHORT).show();
                 }
                 else {
+
                     db.deleteBookmark(url);
                     btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_off);
                     Toast.makeText(MainActivity.this,"Đã xoá dấu trang.",Toast.LENGTH_SHORT).show();
