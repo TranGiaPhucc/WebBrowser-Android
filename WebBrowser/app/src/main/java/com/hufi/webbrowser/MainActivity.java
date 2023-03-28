@@ -21,6 +21,7 @@ import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     TextView txtMemory, txtAdblock;
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
-    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck;
+    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode;
     ListView listUrl;
     ArrayList<History> arrayList;
     Spinner spnSearch;
@@ -138,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, new IntentFilter("internet-speed"));
 
         mHandler.postDelayed(mRunnable, 1000);
 
@@ -209,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
         txtMemory=findViewById(R.id.txtMemory);
         txtUrl=findViewById(R.id.txtUrl);
         listUrl=findViewById(R.id.listUrl);
+        btnQRCode=findViewById(R.id.btnQRCode);
         btnReload=findViewById(R.id.btnReload);
         btnGo=findViewById(R.id.btnGo);
         btnBack=findViewById(R.id.btnBack);
@@ -342,6 +346,31 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnQRCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                /*try {
+                    Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+                    intent.putExtra("SCAN_MODE", "QR_CODE_MODE"); // "PRODUCT_MODE for bar codes
+
+                    startActivityForResult(intent, 31);
+                } catch (Exception e) {
+                    Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
+                    Intent marketIntent = new Intent(Intent.ACTION_VIEW,marketUri);
+                    startActivity(marketIntent);
+                }*/
+                if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M) {
+                    if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        String[] permissions = {Manifest.permission.CAMERA};
+                        requestPermissions(permissions, 1);
+                    } else {
+                        Intent intent = new Intent(MainActivity.this, QrCodeScanner.class);
+                        startActivityForResult(intent, 31);
+                    }
+                }
+            }
+        });
+
         txtUrl.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
@@ -354,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
                     if (search.equals("Web"))
                     {
                         String url=txtUrl.getText().toString().replace(" ","");
-                        if (URLUtil.isValidUrl(url))
+                        if (Patterns.WEB_URL.matcher(url).matches())
                             webView.loadUrl(url);
                         else {
                             url=txtUrl.getText().toString().replace(" ","+");
@@ -565,7 +594,7 @@ public class MainActivity extends AppCompatActivity {
                 if (search.equals("Web"))
                 {
                     String url=txtUrl.getText().toString().replace(" ","");
-                    if (URLUtil.isValidUrl(url))
+                    if (Patterns.WEB_URL.matcher(url).matches())
                         webView.loadUrl(url);
                     else {
                         url=txtUrl.getText().toString().replace(" ","+");
@@ -746,7 +775,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
                 super.onShowCustomView(view,callback);
-                webView.setVisibility(View.GONE);
+                //webView.setVisibility(View.GONE);
                 customViewContainer.setVisibility(View.VISIBLE);
                 customViewContainer.addView(view);
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -756,7 +785,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void onHideCustomView () {
                 super.onHideCustomView();
-                webView.setVisibility(View.VISIBLE);
+                //webView.setVisibility(View.VISIBLE);
                 customViewContainer.setVisibility(View.GONE);
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -1046,23 +1075,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        //LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, new IntentFilter("internet-speed"));
+
         txtUrl.clearFocus();
         webView.requestFocus();
 
-        if (!isMyServiceRunning(InternetSpeedMeter.class))
+        /*if (!isMyServiceRunning(InternetSpeedMeter.class))
         {
             startService(new Intent(this, InternetSpeedMeter.class));
-        }
-
-        LocalBroadcastManager.getInstance(this)
-                .registerReceiver(messageReceiver, new IntentFilter("internet-speed"));
+        }*/
     }
 
     @Override
     protected void onPause() {
         // Unregister since the activity is not visible
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver);
         super.onPause();
+
+        //LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver);
     }
 
     @Override
@@ -1091,9 +1120,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        //Click on URL
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
             String url = data.getStringExtra("url");
             webView.loadUrl(url);
+        }
+
+        //QR Code
+        if (requestCode == 31) {
+            if (resultCode == RESULT_OK) {
+                //String contents = data.getStringExtra("SCAN_RESULT");
+                String url = data.getStringExtra("qrcode");
+                webView.loadUrl(url);
+            }
+            if(resultCode == RESULT_CANCELED){
+                //handle cancel
+            }
         }
 
         //Upload

@@ -133,6 +133,15 @@
         android:textSize="10dp" />
 
     <ImageButton
+        android:id="@+id/btnQRCode"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@id/btnGo"
+        android:layout_toLeftOf="@id/btnMaps"
+        android:visibility="visible"
+        android:background="@android:drawable/ic_menu_camera" />
+
+    <ImageButton
         android:id="@+id/btnMaps"
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -164,7 +173,6 @@
         android:layout_toLeftOf="@id/btnHistory"
         android:background="@android:drawable/btn_star" />
 
-
     <ProgressBar
         android:id="@+id/prgBar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -182,12 +190,9 @@
         android:layout_height="match_parent"
         android:layout_below="@id/prgBar">
 
-
-
         <androidx.core.widget.NestedScrollView
             android:layout_width="0dp"
             android:layout_height="0dp">
-
 
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -204,7 +209,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="10dp"
         android:text="↑: 0 KBps"
         android:textColor="#4DFFFFFF" />
 
@@ -223,10 +228,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
-        android:layout_marginRight="20dp"
         android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
         android:text="Mem 0MB"
-        android:textColor="#4DFFFFFF"/>
+        android:textColor="#4DFFFFFF" />
 
     <TextView
         android:id="@+id/txtAdblock"
@@ -255,7 +260,10 @@
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="5dp"
         android:layout_toRightOf="@id/cbxAd"
+        android:visibility="gone"
         android:text="IS"
         android:textColor="#4DFFFFFF" />
+
+
 
 </RelativeLayout>
