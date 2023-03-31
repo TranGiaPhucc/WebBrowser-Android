@@ -136,10 +136,11 @@
         android:id="@+id/btnQRCode"
         android:layout_width="30dp"
         android:layout_height="30dp"
+        android:layout_marginRight="5dp"
         android:layout_below="@id/btnGo"
         android:layout_toLeftOf="@id/btnMaps"
-        android:visibility="visible"
-        android:background="@android:drawable/ic_menu_camera" />
+        android:background="@android:drawable/ic_menu_camera"
+        android:visibility="visible" />
 
     <ImageButton
         android:id="@+id/btnMaps"
