@@ -17,7 +17,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -62,6 +65,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     TextView txtMemory, txtAdblock;
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
-    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode;
+    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone;
     ListView listUrl;
     ArrayList<History> arrayList;
     Spinner spnSearch;
@@ -219,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
         btnForward=findViewById(R.id.btnForward);
         btnGoogle=findViewById(R.id.btnGoogle);
         btnYoutube=findViewById(R.id.btnYoutube);
+        btnMicrophone=findViewById(R.id.btnMicrophone);
         btnMaps=findViewById(R.id.btnMaps);
         btnPhoneDesktop=findViewById(R.id.btnPhoneDesktop);
         btnHistory=findViewById(R.id.btnHistory);
@@ -342,6 +347,108 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     adCheck = false;
                     Toast.makeText(MainActivity.this, "Ads disabled.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnMicrophone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    String[] permissions = {Manifest.permission.RECORD_AUDIO};
+                    requestPermissions(permissions, 1);
+                } else {
+                    btnMicrophone.setBackgroundResource(android.R.drawable.presence_audio_online);
+
+                    Toast.makeText(getApplicationContext(), "Hãy nói gì đó.", Toast.LENGTH_LONG).show();
+
+                    Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+                    intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, "com.domain.app");
+
+                    SpeechRecognizer recognizer = SpeechRecognizer
+                            .createSpeechRecognizer(MainActivity.this);
+                    RecognitionListener listener = new RecognitionListener() {
+                        @Override
+                        public void onResults(Bundle results) {
+                            ArrayList<String> voiceResults = results
+                                    .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                            if (voiceResults == null) {
+                                System.out.println("No voice results");
+                            } else {
+                                System.out.println("Printing matches: ");
+                                for (String match : voiceResults) {
+                                    System.out.println(match);
+                                    //Toast.makeText(getApplicationContext(), match, Toast.LENGTH_SHORT).show();
+                                    //webView.loadUrl(match);
+                                    txtUrl.setText(match);
+                                    btnGo.performClick();
+                                    //t1.speak(match, TextToSpeech.QUEUE_FLUSH, null);
+                                    btnMicrophone.setBackgroundResource(android.R.drawable.presence_audio_busy);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onReadyForSpeech(Bundle params) {
+                            System.out.println("Ready for speech");
+                        }
+
+                        /**
+                         * ERROR_NETWORK_TIMEOUT = 1;
+                         * ERROR_NETWORK = 2;
+                         * ERROR_AUDIO = 3;
+                         * ERROR_SERVER = 4;
+                         * ERROR_CLIENT = 5;
+                         * ERROR_SPEECH_TIMEOUT = 6;
+                         * ERROR_NO_MATCH = 7;
+                         * ERROR_RECOGNIZER_BUSY = 8;
+                         * ERROR_INSUFFICIENT_PERMISSIONS = 9;
+                         *
+                         * @param error code is defined in SpeechRecognizer
+                         */
+                        @Override
+                        public void onError(int error) {
+                            System.err.println("Error listening for speech: " + error);
+                        }
+
+                        @Override
+                        public void onBeginningOfSpeech() {
+                            System.out.println("Speech starting");
+                        }
+
+                        @Override
+                        public void onBufferReceived(byte[] buffer) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void onEndOfSpeech() {
+                            // TODO Auto-generated method stub
+                        }
+
+                        @Override
+                        public void onEvent(int eventType, Bundle params) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void onPartialResults(Bundle partialResults) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void onRmsChanged(float rmsdB) {
+                            // TODO Auto-generated method stub
+
+                        }
+                    };
+                    recognizer.setRecognitionListener(listener);
+                    recognizer.startListening(intent);
                 }
             }
         });
