@@ -5,13 +5,16 @@ import static androidx.core.app.ActivityCompat.startActivityForResult;
 import android.Manifest;
 import android.app.ActivityManager;
 import android.app.DownloadManager;
+import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +26,7 @@ import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.ContextMenu;
@@ -61,6 +65,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
     private List<String> list;
     private WebView webView;
     private String search = "";
+
+    private String urlNow = "";
 
     boolean adCheck = false;
     int adblockCount = 0;
@@ -411,6 +418,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onError(int error) {
                             System.err.println("Error listening for speech: " + error);
+                            btnMicrophone.setBackgroundResource(android.R.drawable.presence_audio_away);
                         }
 
                         @Override
@@ -521,15 +529,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
         arrayList = new ArrayList<>();
-        HistoryAdapter adapterUrl = new HistoryAdapter(this, R.layout.list_history, arrayList);
+        HistoryAdapter adapterUrl = new HistoryAdapter(this, R.layout.list_urlrecommend, arrayList);
         listUrl.setAdapter(adapterUrl);
 
         webView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                txtUrl.clearFocus();
-                listUrl.setVisibility(View.GONE);
-                webView.requestFocus();
+                if (!txtUrl.getText().toString().equals(urlNow))
+                    txtUrl.setText(urlNow);
+
+                if (txtUrl.isFocused()) {
+                    txtUrl.clearFocus();
+                    listUrl.setVisibility(View.GONE);
+                    webView.requestFocus();
+                }
                 return false;
             }
         });
@@ -790,10 +803,13 @@ public class MainActivity extends AppCompatActivity {
                 //super.onPageFinished(view, url);
                 //Log.e("URL", url);
 
+                capture();
+
                 prgBar.setVisibility(View.GONE);
 
                 String urlCheck = txtUrl.getText().toString();
-                txtUrl.setText(url);
+                urlNow = url;
+                txtUrl.setText(urlNow);
 
                 if (!urlCheck.equals(txtUrl.getText().toString()))
                 {
@@ -868,6 +884,7 @@ public class MainActivity extends AppCompatActivity {
                         super.shouldInterceptRequest(view, url);
             }
         });
+
 
         webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView view, int progress) {
@@ -1083,6 +1100,8 @@ public class MainActivity extends AppCompatActivity {
             txtMemory.setText("Mem: " + usedMemInMB + "MB");
             txtAdblock.setText("Ads: " + adblockCount);
 
+            //capture();
+
             mHandler.postDelayed(mRunnable, 1000);
         }
     };
@@ -1207,7 +1226,9 @@ public class MainActivity extends AppCompatActivity {
         webView=findViewById(R.id.webView);
         txtUrl=findViewById(R.id.txtUrl);
         listUrl=findViewById(R.id.listUrl);
-        if (listUrl.getVisibility() == View.VISIBLE) {
+
+        //if (listUrl.getVisibility() != View.GONE) {
+        if (txtUrl.isFocused() == true) {
             txtUrl.clearFocus();
             listUrl.setVisibility(View.GONE);
             webView.requestFocus();
@@ -1336,5 +1357,38 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setUseWideViewPort(enabled);
         webView.getSettings().setLoadWithOverviewMode(enabled);
         webView.reload();
+    }
+
+    public void capture() {
+        Bitmap bmp = null;
+        ByteArrayOutputStream bos = null;
+        byte[] bt = null;
+        String image = "";
+        try {
+            bmp = Bitmap.createBitmap(webView.getWidth(),
+                    webView.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas c = new Canvas(bmp);
+            webView.draw(c);        //With quality value 100 still works on main page google.com, just too heavy cause exception e or simply not load, so change quality compress (default: 100)
+
+            bos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 0, bos);
+            bt = bos.toByteArray();
+
+            image = Base64.encodeToString(bt, Base64.DEFAULT);
+
+            Intent intentWidget = new Intent(getApplicationContext(), NewAppWidget.class);
+            intentWidget.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+
+            intentWidget.putExtra("webView", image);
+
+            int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplicationContext(), NewAppWidget.class));
+            if (ids != null && ids.length > 0) {
+                intentWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                sendBroadcast(intentWidget);
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+        }
     }
 }

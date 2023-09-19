@@ -93,9 +93,47 @@ public class Database {
     }
 
     public ArrayList<History> getUrlRecommend(String urlText)	{
-        SQLiteDatabase db =	openDB();
-        ArrayList<History>	arr =	new	ArrayList<>();
+        ArrayList<History> arr = new ArrayList<>();
+
+        if (urlText.equals(""))
+            return arr;
+
         ArrayList<String> arrCheck = new ArrayList<>();
+        SQLiteDatabase db =	openDB();
+
+        String sql = "select * from History where url like '%" + urlText + "%'";
+        Cursor csr = db.rawQuery(sql, null);
+        if	(csr !=	null)	{
+            String urlBest = "";
+            String titleBest = "";
+
+            if	(csr.moveToLast())	{
+                do	{
+                    String url = csr.getString(1);
+                    String title = csr.getString(2);
+
+                    if (url.contains(urlText) && !arrCheck.contains(url)) {
+                        History h = new History(url, title);
+                        arr.add(0, h);
+                        arrCheck.add(0, url);
+                    }
+
+                    if ((urlBest.equals("") || url.length() < urlBest.length())) {
+                        urlBest = url;
+                        titleBest = title;
+                    }
+                }	while	(csr.moveToPrevious());
+
+                History h = new History(urlBest, titleBest);
+                for (int i=0; i<arr.size(); i++) {
+                    if (arr.get(i).getUrl() == urlBest)
+                        arr.remove(i);
+                }
+                arr.add(0, h);
+            }
+        }
+
+        /*
         String	sql =	"select	*	from	History";
         Cursor csr =	db.rawQuery(sql,	null);
         if	(csr !=	null)	{
@@ -110,11 +148,10 @@ public class Database {
                             arrCheck.add(url);
                     }
                 }	while	(csr.moveToPrevious());
-            } }
-        closeDB(db);
+            }
+        }*/
 
-        //Collections.sort(arr, Comparator.comparing(History::getCount));
-        //Collections.sort(arr, Collections.reverseOrder());
+        closeDB(db);
 
         return	arr;
     }

@@ -6,15 +6,25 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Base64;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.RemoteViews;
 
 import com.google.android.gms.maps.MapView;
+
+import java.io.ByteArrayOutputStream;
 
 public class Maps extends AppCompatActivity {
     private WebView webView;
@@ -25,13 +35,15 @@ public class Maps extends AppCompatActivity {
     private String mGeolocationOrigin;
     private GeolocationPermissions.Callback mGeolocationCallback;
 
+    //private Handler mHandler = new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
         webView=findViewById(R.id.webViewMap);
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(client);
         webView.getSettings().setJavaScriptEnabled(true);
         registerForContextMenu(webView);
         webView.setVerticalScrollBarEnabled(false);
@@ -42,6 +54,8 @@ public class Maps extends AppCompatActivity {
         webView.getSettings().setGeolocationEnabled(true);
         webView.setWebChromeClient(new GeoWebChromeClient());
         webView.loadUrl("https://www.google.com/maps");
+
+        //mHandler.postDelayed(capture, 1000);
     }
 
     @Override
@@ -83,6 +97,46 @@ public class Maps extends AppCompatActivity {
                     ActivityCompat.requestPermissions(Maps.this, new String[] {permission}, RP_ACCESS_LOCATION);
                 }
             }
+        }
+    }
+
+    private final WebViewClient client = new WebViewClient() {
+        public void onPageFinished(WebView view, String url) {
+            //Toast.makeText(Maps.this, url, Toast.LENGTH_SHORT).show();
+            capture();
+        }
+    };
+
+    public void capture() {
+        Bitmap bmp = null;
+        ByteArrayOutputStream bos = null;
+        byte[] bt = null;
+        String image = "";
+        try {
+            bmp = Bitmap.createBitmap(webView.getWidth(),
+                    webView.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas c = new Canvas(bmp);
+            webView.draw(c);        //With quality value 100 still works on main page google.com, just too heavy cause exception e or simply not load, so change quality compress (default: 100)
+
+            bos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 0, bos);
+            bt = bos.toByteArray();
+
+            image = Base64.encodeToString(bt, Base64.DEFAULT);
+
+            Intent intentWidget = new Intent(getApplicationContext(), NewAppWidget.class);
+            intentWidget.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+
+            intentWidget.putExtra("webView", image);
+
+            int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplicationContext(), NewAppWidget.class));
+            if (ids != null && ids.length > 0) {
+                intentWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                sendBroadcast(intentWidget);
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
         }
     }
 }
