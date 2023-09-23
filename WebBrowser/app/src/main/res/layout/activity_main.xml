@@ -231,6 +231,16 @@
         android:text="↓: 0 KBps"
         android:textColor="#4DFFFFFF" />
 
+    <ImageView
+        android:id="@+id/imgInternetConnection"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_below="@id/txtUrl"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_toRightOf="@id/cbxAd"
+        android:background="@drawable/red" />
+
     <TextView
         android:id="@+id/txtMemory"
         android:layout_width="wrap_content"
@@ -271,7 +281,5 @@
         android:visibility="gone"
         android:text="IS"
         android:textColor="#4DFFFFFF" />
-
-
 
 </RelativeLayout>

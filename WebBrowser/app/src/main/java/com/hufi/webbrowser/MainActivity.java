@@ -15,6 +15,8 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,6 +41,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
+import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -54,6 +57,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -72,6 +76,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     SwipeRefreshLayout refreshLayout;
@@ -81,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
     ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone;
+    ImageView imgInternetConnection;
     ListView listUrl;
     ArrayList<History> arrayList;
     Spinner spnSearch;
@@ -96,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
     boolean adCheck = false;
     int adblockCount = 0;
     int linkCount = 0;
+
+    long uploadSpeedGlobal = 0;
+    long downloadSpeedGlobal = 0;
 
     //Upload
     public Context context;
@@ -217,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
 
         customViewContainer = findViewById(R.id.customViewContainer);
 
+        imgInternetConnection=findViewById(R.id.imgInternetConnection);
         cbxInternetSpeedMeter=findViewById(R.id.cbxInternetSpeedMeter);
         cbxAd=findViewById(R.id.cbxAd);
         txtAdblock=findViewById(R.id.txtAdblock);
@@ -1063,7 +1074,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
 
-                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                /*DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                 request.setMimeType(mimeType);
                 String cookies = CookieManager.getInstance().getCookie(url);
                 request.addRequestHeader("cookie",cookies);
@@ -1075,9 +1086,48 @@ public class MainActivity extends AppCompatActivity {
                 request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,URLUtil.guessFileName(url, contentDisposition, mimeType));
                 DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                 dm.enqueue(request);
-                Toast.makeText(getApplicationContext(),"Đang tải...",Toast.LENGTH_SHORT).show();      //Downloading File
+                Toast.makeText(getApplicationContext(),"Đang tải...",Toast.LENGTH_SHORT).show();      //Downloading File*/
+
+                DownloadManager.Request request = new DownloadManager.Request(
+                        Uri.parse(url));
+                //request.setMimeType(mimeType);
+                String cookies = CookieManager.getInstance().getCookie(url);
+                request.addRequestHeader("cookie",cookies);
+                request.addRequestHeader("User-Agent",userAgent);
+                request.setDescription(URLUtil.guessFileName(url, contentDisposition, mimeType));
+                request.setTitle(URLUtil.guessFileName(url,contentDisposition,mimeType));
+                request.allowScanningByMediaScanner();
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); //Notify client once download is completed!
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimeType));
+                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                dm.enqueue(request);
+                Toast.makeText(getApplicationContext(), "Đang tải file về", //To notify the Client that the file is being downloaded
+                        Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void checkInternetConnection() {
+        int red = 255;
+        int green = 255;
+        int blue = 0;
+
+        double value = (double) (uploadSpeedGlobal + downloadSpeedGlobal);
+        if (value >= 10000) {
+            red = 0;
+            green = 0;
+            blue = 255;
+        } else if (value >= 1000) {
+            red = 0;
+            green = (int) (255 - Math.round(value / 10000 * 255));
+            blue = (int) Math.round(value / 10000 * 255);
+        } else {
+            red = (int) (255 - Math.round(value / 1000 * 255));
+            green = 255;
+            blue = 0;
+        }
+
+        imgInternetConnection.setColorFilter(Color.argb(255, red, green, blue));
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -1097,10 +1147,29 @@ public class MainActivity extends AppCompatActivity {
             final long maxHeapSizeInMB=runtime.maxMemory() / 1048576L;
             final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
 
-            txtMemory.setText("Mem: " + usedMemInMB + "MB");
+            txtMemory.setText("Mem: " + usedMemInMB + "/" + availHeapSizeInMB + " MB");
             txtAdblock.setText("Ads: " + adblockCount);
 
             //capture();
+
+            ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
+            //For 3G check
+            boolean is3g = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
+                    .isConnectedOrConnecting();
+            //For WiFi Check
+            boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
+                    .isConnectedOrConnecting();
+
+            if (!is3g && !isWifi) {
+                imgInternetConnection.setImageResource(R.drawable.red);
+                imgInternetConnection.setColorFilter(Color.argb(0, 0, 0, 0));
+            }
+            else {
+                imgInternetConnection.setImageResource(R.drawable.green);
+
+                checkInternetConnection();
+            }
 
             mHandler.postDelayed(mRunnable, 1000);
         }
@@ -1126,13 +1195,42 @@ public class MainActivity extends AppCompatActivity {
 
                             if(URLUtil.isValidUrl(DownloadImageURL)){
 
-                                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(DownloadImageURL));
+                                /*DownloadManager.Request request = new DownloadManager.Request(Uri.parse(DownloadImageURL));
                                 request.allowScanningByMediaScanner();
                                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                                 DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                                downloadManager.enqueue(request);
+                                downloadManager.enqueue(request);*/
 
-                                Toast.makeText(MainActivity.this,"Đang tải xuống.",Toast.LENGTH_LONG).show();        //Image Downloaded Successfully
+                                String filename = "";
+                                //String type = null;
+                                String mimeType = MimeTypeMap.getFileExtensionFromUrl(DownloadImageURL);
+                                filename = URLUtil.guessFileName(DownloadImageURL, DownloadImageURL, mimeType);
+                                /*if(mimeType!=null)
+                                {
+                                    type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(mimeType);
+                                }
+                                if(type==null)
+                                {
+                                    filename = filename.replace(filename.substring(filename.lastIndexOf(".")),".png");
+                                    type = "image/*";
+                                }*/
+
+                                DownloadManager.Request request = new DownloadManager.Request(
+                                        Uri.parse(DownloadImageURL));
+
+                                //request.setMimeType(mimeType);
+                                request.setDescription(filename);
+                                request.setTitle(filename);
+
+                                String cookies = CookieManager.getInstance().getCookie(DownloadImageURL);
+                                request.addRequestHeader("cookie",cookies);
+                                request.allowScanningByMediaScanner();
+                                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); //Notify client once download is completed!
+                                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,filename);
+                                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                                dm.enqueue(request);
+
+                                Toast.makeText(MainActivity.this,"Đang tải hình ảnh về",Toast.LENGTH_LONG).show();        //Image Downloaded Successfully
                             }
                             else {
                                 Toast.makeText(MainActivity.this,"Không tải được, có lỗi xảy ra.",Toast.LENGTH_LONG).show();         //Sorry.. Something Went Wrong.
@@ -1194,6 +1292,9 @@ public class MainActivity extends AppCompatActivity {
             }
             contentUpload = "↑: " + uploadSpeed + " " + uploadUnit;
             TX.setText(contentUpload);
+
+            uploadSpeedGlobal = txBytes;
+            downloadSpeedGlobal = rxBytes;
         }
     };
 
