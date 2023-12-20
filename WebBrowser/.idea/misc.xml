@@ -18,6 +18,8 @@
         <entry key="..\:/Android apps/WebBrowser/app/src/main/res/layout/list_history.xml" value="0.25" />
         <entry key="..\:/Android apps/WebBrowser/app/src/main/res/layout/list_urlrecommend.xml" value="0.18255664814023087" />
         <entry key="..\:/Android apps/WebBrowser/app/src/main/res/layout/new_app_widget.xml" value="0.2975630611372381" />
+        <entry key="..\:/Android apps/WebBrowser/app/src/main/res/layout/overlay.xml" value="0.18255664814023087" />
+        <entry key="..\:/Android apps/WebBrowser/app/src/main/res/layout/overlay_drawerlayout.xml" value="0.18255664814023087" />
       </map>
     </option>
   </component>

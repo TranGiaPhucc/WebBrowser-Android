@@ -5,6 +5,7 @@ import static androidx.core.app.ActivityCompat.startActivityForResult;
 import android.Manifest;
 import android.app.ActivityManager;
 import android.app.DownloadManager;
+import android.app.PictureInPictureParams;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -16,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -32,7 +34,9 @@ import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -58,14 +62,18 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -130,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
     //private long txBytes = 0;
     //private long rxBytes = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -795,6 +804,65 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View windowMain = inflater.inflate(R.layout.activity_main, null);
+
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON|
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL|
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.END | Gravity.BOTTOM;
+        params.x = 100;
+        params.y = 100;
+        params.width = 500;
+        params.height = 400;
+
+        //windowManager.addView(windowMain, params);
+        //windowManager.removeView(windowMain);
+
+        windowMain.setOnTouchListener(new View.OnTouchListener() {
+            private int initialX;
+            private int initialY;
+            private float initialTouchX;
+            private float initialTouchY;
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d("AD","Action E" + event);
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        Log.d("AD","Action Down");
+                        initialX = params.x;
+                        initialY = params.y;
+                        initialTouchX = event.getRawX();
+                        initialTouchY = event.getRawY();
+                        return true;
+                    /*case MotionEvent.ACTION_UP:
+                        Log.d("AD","Action Up");
+                        int Xdiff = (int) (event.getRawX() - initialTouchX);
+                        int Ydiff = (int) (event.getRawY() - initialTouchY);
+                        if (Xdiff < 10 && Ydiff < 10) {
+                            if (isViewCollapsed()) {
+                                collapsedView.setVisibility(View.GONE);
+                                expandedView.setVisibility(View.VISIBLE);
+                            }
+                        }
+                        return true;*/
+                    case MotionEvent.ACTION_MOVE:
+                        Log.d("AD","Action Move");
+                        params.x = initialX - (int) (event.getRawX() - initialTouchX);
+                        params.y = initialY - (int) (event.getRawY() - initialTouchY);
+                        windowManager.updateViewLayout(windowMain, params);
+                        return true;
+                }
+                return false;
+            }
+        });
+
         webView.setWebViewClient(new WebViewClient(){
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon)
@@ -908,14 +976,16 @@ public class MainActivity extends AppCompatActivity {
                 //webImage.setImageBitmap(icon);
             }
 
-            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+            public void onShowCustomView(View view, CustomViewCallback callback) {
                 super.onShowCustomView(view,callback);
                 //webView.setVisibility(View.GONE);
                 customViewContainer.setVisibility(View.VISIBLE);
                 customViewContainer.addView(view);
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                //getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                ////getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
+                //windowManager.addView(windowMain, params);
             }
 
             public void onHideCustomView () {
@@ -925,6 +995,8 @@ public class MainActivity extends AppCompatActivity {
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 webView.requestFocus();
+
+                //windowManager.removeView(windowMain);
             }
 
             // for Lollipop, all in one
@@ -1042,7 +1114,7 @@ public class MainActivity extends AppCompatActivity {
         */
             public boolean onShowFileChooser(
                     WebView webView, ValueCallback<Uri[]> filePathCallback,
-                    WebChromeClient.FileChooserParams fileChooserParams) {
+                    FileChooserParams fileChooserParams) {
                 if (mUploadMessage != null) {
                     mUploadMessage.onReceiveValue(null);
                 }
@@ -1297,6 +1369,16 @@ public class MainActivity extends AppCompatActivity {
             downloadSpeedGlobal = rxBytes;
         }
     };
+
+    /*@Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+        if (isInPictureInPictureMode) {
+
+        }
+        else {
+
+        }
+    }*/
 
     @Override
     protected void onResume() {

@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:background="#3C3C3C"
     android:windowSoftInputMode="stateAlwaysHidden"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:id="@+id/mainActivity">
 
     <FrameLayout
         android:layout_width="match_parent"
