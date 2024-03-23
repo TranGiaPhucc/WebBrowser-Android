@@ -8,6 +8,8 @@ import android.app.DownloadManager;
 import android.app.PictureInPictureParams;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     TextView txtMemory, txtAdblock;
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
-    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone;
+    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone, btnCopy, btnPaste;
     ImageView imgInternetConnection;
     ListView listUrl;
     ArrayList<History> arrayList;
@@ -251,6 +253,8 @@ public class MainActivity extends AppCompatActivity {
         btnGoogle=findViewById(R.id.btnGoogle);
         btnYoutube=findViewById(R.id.btnYoutube);
         btnMicrophone=findViewById(R.id.btnMicrophone);
+        btnCopy=findViewById(R.id.btnCopy);
+        btnPaste=findViewById(R.id.btnPaste);
         btnMaps=findViewById(R.id.btnMaps);
         btnPhoneDesktop=findViewById(R.id.btnPhoneDesktop);
         btnHistory=findViewById(R.id.btnHistory);
@@ -374,6 +378,30 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     adCheck = false;
                     Toast.makeText(MainActivity.this, "Ads disabled.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnCopy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("url", txtUrl.getText().toString());
+                clipboard.setPrimaryClip(clip);
+
+                Toast.makeText(MainActivity.this, "Copied!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnPaste.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                if (clipboard.hasPrimaryClip()) {
+                    ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+                    txtUrl.setText(item.getText().toString());
+
+                    Toast.makeText(MainActivity.this, "Pasted!", Toast.LENGTH_SHORT).show();
                 }
             }
         });

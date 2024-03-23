@@ -46,7 +46,7 @@
         android:id="@+id/txtUrl"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_toLeftOf="@id/btnMicrophone"
+        android:layout_toLeftOf="@id/btnCopy"
         android:layout_toRightOf="@id/btnBookmarkCheck"
         android:focusable="true"
         android:focusableInTouchMode="true"
@@ -165,6 +165,22 @@
         android:layout_marginTop="5dp"
         android:layout_toLeftOf="@id/btnGo"
         android:background="@android:drawable/presence_audio_busy" />
+
+    <ImageButton
+        android:id="@+id/btnPaste"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="5dp"
+        android:layout_toLeftOf="@id/btnMicrophone"
+        android:background="?attr/actionModePasteDrawable" />
+
+    <ImageButton
+        android:id="@+id/btnCopy"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="5dp"
+        android:layout_toLeftOf="@id/btnPaste"
+        android:background="?attr/actionModeCopyDrawable" />
 
     <ImageButton
         android:id="@+id/btnHistory"
