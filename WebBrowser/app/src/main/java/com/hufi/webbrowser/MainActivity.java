@@ -51,6 +51,7 @@ import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -209,9 +210,10 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setAppCacheMaxSize( 1024 * 1024 * 1024 ); // 1GB (default: 5MB)
         webView.getSettings().setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
         webView.getSettings().setAppCacheEnabled(true);
-        webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+        webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);       //LOAD_DEFAULT     //LOAD_NO_CACHE
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         //webView.loadUrl("https://www.google.com");
 
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
@@ -225,6 +227,10 @@ public class MainActivity extends AppCompatActivity {
             {
                 startService(new Intent(this, InternetSpeedMeter.class));
             }
+        }
+
+        if (Build.VERSION.SDK_INT >= 11){
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);       //LAYER_TYPE_NONE
         }
 
         if (db.isHistoryEmpty() == true)
@@ -896,7 +902,7 @@ public class MainActivity extends AppCompatActivity {
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
                 // Here you can check your new URL.
-                //super.onPageStarted(view, url, favicon);
+                super.onPageStarted(view, url, favicon);
                 //Log.e("URL", url);
                 //txtUrl.setText(url);
 
@@ -904,10 +910,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onPageFinished(WebView view, String url)
-            {
+            public void onPageFinished(WebView view, String url) {
                 // Here you can check your new URL.
-                //super.onPageFinished(view, url);
+                super.onPageFinished(view, url);
                 //Log.e("URL", url);
 
                 capture();
@@ -918,16 +923,14 @@ public class MainActivity extends AppCompatActivity {
                 urlNow = url;
                 txtUrl.setText(urlNow);
 
-                if (!urlCheck.equals(txtUrl.getText().toString()))
-                {
+                if (!urlCheck.equals(txtUrl.getText().toString())) {
                     String title = view.getTitle();
                     History h = new History(url, title);
                     db.insertHistory(h);
 
-                    if(db.checkBookmarkExist(url)) {
+                    if (db.checkBookmarkExist(url)) {
                         btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_on);
-                    }
-                    else {
+                    } else {
                         btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_off);
                     }
 
@@ -947,26 +950,30 @@ public class MainActivity extends AppCompatActivity {
                     }*/
                 }
             }
-            /*
+
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                txtUrl.setText(url);
+
                 if (url.endsWith(".mp4")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(Uri.parse(url), "video/*");
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     view.getContext().startActivity(intent);
-                    return true;
+                    return true;        //true
                 } else
                     if (url.startsWith("tel:") || url.startsWith("sms:") || url.startsWith("smsto:")
                         || url.startsWith("mms:") || url.startsWith("mmsto:")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     view.getContext().startActivity(intent);
-                    return true;
+                    return true;        //true
                 } else {
                     return super.shouldOverrideUrlLoading(view, url);
+                    //return false;
                 }
-            }*/
+            }
 
             private Map<String, Boolean> loadedUrls = new HashMap<>();
             @Nullable
@@ -1281,63 +1288,91 @@ public class MainActivity extends AppCompatActivity {
 
         final WebView.HitTestResult webViewHitTestResult = webView.getHitTestResult();
 
-        if (webViewHitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE ||
-                webViewHitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+        if (webViewHitTestResult.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE || webViewHitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE ||
+                        webViewHitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
 
-            contextMenu.setHeaderTitle("");    //Download Image From Below
+            String url = webViewHitTestResult.getExtra();
 
-            contextMenu.add(0, 1, 0, "Lưu hình ảnh")    //Save - Download Image
-                    .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
+            contextMenu.setHeaderTitle(url);    //Download Image From Below
 
-                            String DownloadImageURL = webViewHitTestResult.getExtra();
+            contextMenu.add(0, 0, 0, "Mở liên kết").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    txtUrl.setText(url);
+                    btnGo.performClick();
 
-                            if(URLUtil.isValidUrl(DownloadImageURL)){
+                    return false;
+                }
+            });
 
-                                /*DownloadManager.Request request = new DownloadManager.Request(Uri.parse(DownloadImageURL));
-                                request.allowScanningByMediaScanner();
-                                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                                DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                                downloadManager.enqueue(request);*/
+            contextMenu.add(0, 0, 0, "Sao chép liên kết").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("url", url);
+                    clipboard.setPrimaryClip(clip);
 
-                                String filename = "";
-                                //String type = null;
-                                String mimeType = MimeTypeMap.getFileExtensionFromUrl(DownloadImageURL);
-                                filename = URLUtil.guessFileName(DownloadImageURL, DownloadImageURL, mimeType);
-                                /*if(mimeType!=null)
-                                {
-                                    type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(mimeType);
+                    Toast.makeText(MainActivity.this, "Copied!", Toast.LENGTH_SHORT).show();
+
+                    return false;
+                }
+            });
+
+            if (webViewHitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE ||
+                    webViewHitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+
+                contextMenu.add(0, 0, 0, "Lưu hình ảnh")    //Save - Download Image
+                        .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                                String DownloadImageURL = webViewHitTestResult.getExtra();
+
+                                if (URLUtil.isValidUrl(DownloadImageURL)) {
+
+                                    /*DownloadManager.Request request = new DownloadManager.Request(Uri.parse(DownloadImageURL));
+                                    request.allowScanningByMediaScanner();
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                                    downloadManager.enqueue(request);*/
+
+                                    String filename = "";
+                                    //String type = null;
+                                    String mimeType = MimeTypeMap.getFileExtensionFromUrl(DownloadImageURL);
+                                    filename = URLUtil.guessFileName(DownloadImageURL, DownloadImageURL, mimeType);
+                                    /*if(mimeType!=null)
+                                    {
+                                        type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(mimeType);
+                                    }
+                                    if(type==null)
+                                    {
+                                        filename = filename.replace(filename.substring(filename.lastIndexOf(".")),".png");
+                                        type = "image/*";
+                                    }*/
+
+                                    DownloadManager.Request request = new DownloadManager.Request(
+                                            Uri.parse(DownloadImageURL));
+
+                                    //request.setMimeType(mimeType);
+                                    request.setDescription(filename);
+                                    request.setTitle(filename);
+
+                                    String cookies = CookieManager.getInstance().getCookie(DownloadImageURL);
+                                    request.addRequestHeader("cookie", cookies);
+                                    request.allowScanningByMediaScanner();
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); //Notify client once download is completed!
+                                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+                                    DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                                    dm.enqueue(request);
+
+                                    Toast.makeText(MainActivity.this, "Đang tải hình ảnh về", Toast.LENGTH_LONG).show();        //Image Downloaded Successfully
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Không tải được, có lỗi xảy ra.", Toast.LENGTH_LONG).show();         //Sorry.. Something Went Wrong.
                                 }
-                                if(type==null)
-                                {
-                                    filename = filename.replace(filename.substring(filename.lastIndexOf(".")),".png");
-                                    type = "image/*";
-                                }*/
-
-                                DownloadManager.Request request = new DownloadManager.Request(
-                                        Uri.parse(DownloadImageURL));
-
-                                //request.setMimeType(mimeType);
-                                request.setDescription(filename);
-                                request.setTitle(filename);
-
-                                String cookies = CookieManager.getInstance().getCookie(DownloadImageURL);
-                                request.addRequestHeader("cookie",cookies);
-                                request.allowScanningByMediaScanner();
-                                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); //Notify client once download is completed!
-                                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,filename);
-                                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                                dm.enqueue(request);
-
-                                Toast.makeText(MainActivity.this,"Đang tải hình ảnh về",Toast.LENGTH_LONG).show();        //Image Downloaded Successfully
+                                return false;
                             }
-                            else {
-                                Toast.makeText(MainActivity.this,"Không tải được, có lỗi xảy ra.",Toast.LENGTH_LONG).show();         //Sorry.. Something Went Wrong.
-                            }
-                            return false;
-                        }
-                    });
+                        });
+            }
         }
     }
 /*
