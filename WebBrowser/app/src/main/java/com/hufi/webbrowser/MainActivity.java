@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -220,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setDomStorageEnabled(true);
+
         //webView.loadUrl("https://www.google.com");
 
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
@@ -330,7 +332,8 @@ public class MainActivity extends AppCompatActivity {
         webView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
-                if (webView.getUrl().contains("youtube.com")) {
+                //if (webView.getUrl().contains("youtube.com")) {
+                if (!webView.canScrollVertically(1)) {   //1 down -1 up
                     refreshLayout.setEnabled(false);
                 }
                 else if (webView.getScrollY() == 0) {
@@ -1050,10 +1053,39 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+            public boolean onCreateWindow(WebView view, boolean isDialog,
+                                          boolean isUserGesture, Message resultMsg) {
+
+                WebView newWebView = new WebView(MainActivity.this);
+                newWebView.getSettings().setJavaScriptEnabled(true);
+                newWebView.getSettings().setSupportMultipleWindows(true);
+                //view.addView(newWebView);
+                WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
+                transport.setWebView(newWebView);
+                resultMsg.sendToTarget();
+
+                newWebView.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                        webView.loadUrl(url);
+
+                        return true;
+                    }
+                });
+
+                //newWebView.destroy();
+
+                return true;
+            }
+            /*
+            @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 //Required functionality here
-                return super.onJsAlert(view, url, message, result);
-            }
+                //return super.onJsAlert(view, url, message, result);
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
+                return true;
+            }*/
 
             @Override
             public void onReceivedIcon(WebView view, Bitmap icon) {
