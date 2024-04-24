@@ -47,6 +47,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
+import android.webkit.JsResult;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
     ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone, btnCopy, btnPaste;
-    ImageView imgInternetConnection;
+    ImageView imgInternetConnection, imgWebIcon;
     ListView listUrl;
     ArrayList<History> arrayList;
     Spinner spnSearch;
@@ -110,6 +111,11 @@ public class MainActivity extends AppCompatActivity {
     private String search = "";
 
     private String urlNow = "";
+
+    boolean listUrlVisible = false;
+
+    //boolean isRedirected = false;
+    boolean isLoaded = false;
 
     boolean adCheck = false;
     int adblockCount = 0;
@@ -207,13 +213,13 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setGeolocationEnabled(true);
         webView.getSettings().setAllowContentAccess(true);
         webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setAppCacheMaxSize( 1024 * 1024 * 1024 ); // 1GB (default: 5MB)
-        webView.getSettings().setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
-        webView.getSettings().setAppCacheEnabled(true);
-        webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);       //LOAD_DEFAULT     //LOAD_NO_CACHE
+        //webView.getSettings().setAppCacheMaxSize( 1024 * 1024 * 1024 ); // 1GB (default: 5MB)
+        //webView.getSettings().setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
+        //webView.getSettings().setAppCacheEnabled(true);
+        //webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);       //LOAD_DEFAULT     //LOAD_NO_CACHE
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-        webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+        webView.getSettings().setDomStorageEnabled(true);
         //webView.loadUrl("https://www.google.com");
 
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
@@ -242,8 +248,8 @@ public class MainActivity extends AppCompatActivity {
             webView.loadUrl(urlLast);
         }
 
-        customViewContainer = findViewById(R.id.customViewContainer);
-
+        customViewContainer=findViewById(R.id.customViewContainer);
+        imgWebIcon=findViewById(R.id.imgWebIcon);
         imgInternetConnection=findViewById(R.id.imgInternetConnection);
         cbxInternetSpeedMeter=findViewById(R.id.cbxInternetSpeedMeter);
         cbxAd=findViewById(R.id.cbxAd);
@@ -299,9 +305,9 @@ public class MainActivity extends AppCompatActivity {
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh () {
-                webView.reload();
-                refreshLayout.setRefreshing(false);
-                /*
+                //webView.reload();
+                //refreshLayout.setRefreshing(false);
+
                 refreshLayout.setRefreshing(true);
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -309,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
                         refreshLayout.setRefreshing(false);
                         webView.reload();
                     }
-                },0);*/
+                },0);
             }
         });
 
@@ -324,7 +330,10 @@ public class MainActivity extends AppCompatActivity {
         webView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
-                if (webView.getScrollY() == 0) {
+                if (webView.getUrl().contains("youtube.com")) {
+                    refreshLayout.setEnabled(false);
+                }
+                else if (webView.getScrollY() == 0) {
                     refreshLayout.setEnabled(true);
                 } else {
                     refreshLayout.setEnabled(false);
@@ -349,6 +358,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 search = list.get(i);
@@ -365,6 +375,7 @@ public class MainActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> adapterView) {
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 search = "Web";
@@ -546,6 +557,7 @@ public class MainActivity extends AppCompatActivity {
                 if (i == KeyEvent.KEYCODE_BACK) {
                     txtUrl.clearFocus();
                     listUrl.setVisibility(View.GONE);
+                    listUrlVisible = false;
                 }
                 else if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER)
                 {
@@ -569,6 +581,7 @@ public class MainActivity extends AppCompatActivity {
                     //txtUrl.setCursorVisible(false);
                     txtUrl.clearFocus();
                     listUrl.setVisibility(View.GONE);
+                    listUrlVisible = false;
                     webView.requestFocus();
                     try {
                         InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
@@ -595,6 +608,7 @@ public class MainActivity extends AppCompatActivity {
                 if (txtUrl.isFocused()) {
                     txtUrl.clearFocus();
                     listUrl.setVisibility(View.GONE);
+                    listUrlVisible = false;
                     webView.requestFocus();
                 }
                 return false;
@@ -606,6 +620,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (listUrl.getVisibility() == View.GONE) {
                     listUrl.setVisibility(View.VISIBLE);
+                    listUrlVisible = true;
 
                     adapterUrl.clear();
                     arrayList.addAll(db.getUrlRecommend(txtUrl.getText().toString()));
@@ -620,10 +635,12 @@ public class MainActivity extends AppCompatActivity {
                 if (!hasFocus) {
                     txtUrl.clearFocus();
                     listUrl.setVisibility(View.GONE);
+                    listUrlVisible = false;
                     webView.requestFocus();
                 }
                 else {
                     listUrl.setVisibility(View.VISIBLE);
+                    listUrlVisible = true;
 
                     adapterUrl.clear();
                     arrayList.addAll(db.getUrlRecommend(txtUrl.getText().toString()));
@@ -668,6 +685,7 @@ public class MainActivity extends AppCompatActivity {
 
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 try {
@@ -686,6 +704,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 webView.reload();
@@ -697,6 +716,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 Intent intent = new Intent(MainActivity.this, Maps.class);
@@ -709,6 +729,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 if (webView.getSettings().getUseWideViewPort() == false)
@@ -723,6 +744,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
@@ -735,6 +757,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
 
                 Intent intent = new Intent(MainActivity.this, BookmarkActivity.class);
@@ -783,6 +806,7 @@ public class MainActivity extends AppCompatActivity {
                 //txtUrl.requestFocus();
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 //txtUrl.setCursorVisible(false);
                 webView.requestFocus();
                 try {
@@ -803,6 +827,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
             }
         });
@@ -814,6 +839,7 @@ public class MainActivity extends AppCompatActivity {
                     webView.goForward();
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
             }
         });
@@ -824,6 +850,7 @@ public class MainActivity extends AppCompatActivity {
                 webView.loadUrl("https://www.google.com");
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
             }
         });
@@ -834,6 +861,7 @@ public class MainActivity extends AppCompatActivity {
                 webView.loadUrl("https://www.youtube.com");
                 txtUrl.clearFocus();
                 listUrl.setVisibility(View.GONE);
+                listUrlVisible = false;
                 webView.requestFocus();
             }
         });
@@ -906,7 +934,12 @@ public class MainActivity extends AppCompatActivity {
                 //Log.e("URL", url);
                 //txtUrl.setText(url);
 
-                prgBar.setVisibility(View.VISIBLE);
+                //if (!isRedirected) {
+                    prgBar.setVisibility(View.VISIBLE);
+                    isLoaded = false;
+                //}
+
+                //isRedirected = false;
             }
 
             @Override
@@ -915,15 +948,21 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 //Log.e("URL", url);
 
-                capture();
+                if (prgBar.getProgress() < 100)
+                    return;
 
+                if (isLoaded)
+                    return;
+
+                isLoaded = true;
                 prgBar.setVisibility(View.GONE);
 
-                String urlCheck = txtUrl.getText().toString();
+                //String urlCheck = txtUrl.getText().toString();
                 urlNow = url;
                 txtUrl.setText(urlNow);
 
-                if (!urlCheck.equals(txtUrl.getText().toString())) {
+                //if (!urlCheck.equals(txtUrl.getText().toString())) {
+                //if (!isRedirected) {
                     String title = view.getTitle();
                     History h = new History(url, title);
                     db.insertHistory(h);
@@ -948,13 +987,17 @@ public class MainActivity extends AppCompatActivity {
                     } catch (SQLException throwables) {
                         throwables.printStackTrace();
                     }*/
-                }
+                //}
+
+                capture();
             }
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
                 txtUrl.setText(url);
+
+                //isRedirected = true;
 
                 if (url.endsWith(".mp4")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -971,6 +1014,8 @@ public class MainActivity extends AppCompatActivity {
                     return true;        //true
                 } else {
                     return super.shouldOverrideUrlLoading(view, url);
+                    //return false;
+                    //view.loadUrl(url);
                     //return false;
                 }
             }
@@ -999,16 +1044,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView view, int progress) {
                 prgBar.setProgress(progress);
             }
 
             @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                //Required functionality here
+                return super.onJsAlert(view, url, message, result);
+            }
+
+            @Override
             public void onReceivedIcon(WebView view, Bitmap icon) {
                 super.onReceivedIcon(view, icon);
-                //webImage.setImageBitmap(icon);
+
+                imgWebIcon.setImageBitmap(icon);
             }
 
             public void onShowCustomView(View view, CustomViewCallback callback) {
@@ -1468,22 +1519,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        //WebView webView = (WebView) findViewById(R.id.webView);
-        webView=findViewById(R.id.webView);
-        txtUrl=findViewById(R.id.txtUrl);
-        listUrl=findViewById(R.id.listUrl);
-
-        //if (listUrl.getVisibility() != View.GONE) {
-        if (txtUrl.isFocused() == true) {
+        if (listUrlVisible) {     //txtUrl.isFocused() == true
             txtUrl.clearFocus();
             listUrl.setVisibility(View.GONE);
+            listUrlVisible = false;
             webView.requestFocus();
         }
-        else if (webView.canGoBack()){
+        else if (webView.canGoBack()) {
             webView.goBack();
-            txtUrl.clearFocus();
-            listUrl.setVisibility(View.GONE);
-            webView.requestFocus();
         }
         else {
             super.onBackPressed();
