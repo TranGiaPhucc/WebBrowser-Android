@@ -236,7 +236,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
-        android:layout_marginLeft="10dp"
+        android:layout_marginLeft="5dp"
         android:text="↑: 0 KBps"
         android:textColor="#4DFFFFFF" />
 
@@ -245,7 +245,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="10dp"
         android:layout_toRightOf="@id/txtUploadSpeed"
         android:text="↓: 0 KBps"
         android:textColor="#4DFFFFFF" />
@@ -257,8 +257,7 @@
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
-        android:layout_toRightOf="@id/cbxAd"
-        android:background="@drawable/red"
+        android:layout_toRightOf="@id/btnYoutube"
         android:visibility="gone"/>
 
     <ImageView
@@ -268,7 +267,8 @@
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
-        android:layout_toRightOf="@id/btnYoutube" />
+        android:layout_toRightOf="@id/btnYoutube"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/txtMemory"
@@ -276,8 +276,19 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
         android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp"
+        android:text="M: 0MB"
+        android:textColor="#4DFFFFFF"
+        android:visibility="visible" />
+
+    <TextView
+        android:id="@+id/txtScroll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnBack"
+        android:layout_toLeftOf="@id/txtMemory"
         android:layout_marginRight="10dp"
-        android:text="Mem: 0MB"
+        android:text="S: 0/0"
         android:textColor="#4DFFFFFF" />
 
     <TextView
@@ -285,10 +296,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnBack"
-        android:layout_toLeftOf="@id/txtMemory"
+        android:layout_toLeftOf="@id/txtScroll"
         android:layout_marginRight="20dp"
         android:text="AD: 0"
-        android:textColor="#4DFFFFFF" />
+        android:textColor="#4DFFFFFF"
+        android:visibility="gone"/>
 
     <CheckBox
         android:id="@+id/cbxAd"
@@ -296,8 +308,8 @@
         android:layout_height="35dp"
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="5dp"
-        android:layout_toRightOf="@id/imgWebIcon"
-        android:text="AD"
+        android:layout_toRightOf="@id/btnYoutube"
+        android:text="0"
         android:textColor="#4DFFFFFF" />
 
     <CheckBox
@@ -306,7 +318,7 @@
         android:layout_height="35dp"
         android:layout_below="@id/txtUrl"
         android:layout_marginLeft="5dp"
-        android:layout_toRightOf="@id/cbxAd"
+        android:layout_toRightOf="@id/btnYoutube"
         android:visibility="gone"
         android:text="IS"
         android:textColor="#4DFFFFFF" />

@@ -19,7 +19,11 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +37,7 @@ import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.AttributeSet;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
@@ -96,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
     SwipeRefreshLayout refreshLayout;
     FrameLayout customViewContainer;
     EditText txtUrl;
-    TextView txtMemory, txtAdblock;
+    TextView txtMemory, txtAdblock, txtScroll;
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
     ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone, btnCopy, btnPaste;
@@ -206,8 +211,8 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.getSettings().setJavaScriptEnabled(true);
         registerForContextMenu(webView);
-        webView.setVerticalScrollBarEnabled(false);
-        webView.setHorizontalScrollBarEnabled(false);
+        webView.setVerticalScrollBarEnabled(true);
+        webView.setHorizontalScrollBarEnabled(true);
         webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setDisplayZoomControls(false);
         webView.getSettings().setDatabaseEnabled(true);
@@ -221,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setDomStorageEnabled(true);
-
+        webView.getSettings().setUserAgentString(System.getProperty("http.agent"));
         //webView.loadUrl("https://www.google.com");
 
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
@@ -255,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
         imgInternetConnection=findViewById(R.id.imgInternetConnection);
         cbxInternetSpeedMeter=findViewById(R.id.cbxInternetSpeedMeter);
         cbxAd=findViewById(R.id.cbxAd);
+        txtScroll=findViewById(R.id.txtScroll);
         txtAdblock=findViewById(R.id.txtAdblock);
         txtMemory=findViewById(R.id.txtMemory);
         txtUrl=findViewById(R.id.txtUrl);
@@ -332,6 +338,7 @@ public class MainActivity extends AppCompatActivity {
         webView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
+                txtScroll.setText("S: " + webView.getScrollY() + "/" + ((int) Math.floor(webView.getContentHeight() * webView.getScale() - webView.getHeight())));    //((int) Math.floor(webView.getContentHeight() * webView.getScale() - webView.getHeight()))
                 //if (webView.getUrl().contains("youtube.com")) {
                 if (!webView.canScrollVertically(1)) {   //1 down -1 up
                     refreshLayout.setEnabled(false);
@@ -960,6 +967,8 @@ public class MainActivity extends AppCompatActivity {
                 isLoaded = true;
                 prgBar.setVisibility(View.GONE);
 
+                txtScroll.setText("S: " + view.getScrollY() + "/" + ((int) Math.floor(view.getContentHeight() * view.getScale() - view.getHeight())));
+
                 //String urlCheck = txtUrl.getText().toString();
                 urlNow = url;
                 txtUrl.setText(urlNow);
@@ -1008,14 +1017,14 @@ public class MainActivity extends AppCompatActivity {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     view.getContext().startActivity(intent);
                     return true;        //true
-                } else
+                }/* else
                     if (url.startsWith("tel:") || url.startsWith("sms:") || url.startsWith("smsto:")
                         || url.startsWith("mms:") || url.startsWith("mmsto:")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     view.getContext().startActivity(intent);
                     return true;        //true
-                } else {
+                }*/ else {
                     return super.shouldOverrideUrlLoading(view, url);
                     //return false;
                     //view.loadUrl(url);
@@ -1038,6 +1047,8 @@ public class MainActivity extends AppCompatActivity {
                     if (ad == true) {
                         adblockCount++;
                         loadedUrls.put(url, ad);
+
+
                     }
                 } else {
                     ad = loadedUrls.get(url);
@@ -1069,7 +1080,7 @@ public class MainActivity extends AppCompatActivity {
                     public boolean shouldOverrideUrlLoading(WebView view, String url) {
                         webView.loadUrl(url);
 
-                        return true;
+                        return false;
                     }
                 });
 
@@ -1077,21 +1088,21 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
             }
-            /*
-            @Override
+
+            /*@Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 //Required functionality here
-                //return super.onJsAlert(view, url, message, result);
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 
-                return true;
+                return super.onJsAlert(view, url, message, result);
             }*/
 
             @Override
             public void onReceivedIcon(WebView view, Bitmap icon) {
                 super.onReceivedIcon(view, icon);
 
-                imgWebIcon.setImageBitmap(icon);
+                //imgWebIcon.setImageBitmap(icon);
+                btnReload.setBackground(new BitmapDrawable(getResources(), icon));
             }
 
             public void onShowCustomView(View view, CustomViewCallback callback) {
@@ -1337,8 +1348,9 @@ public class MainActivity extends AppCompatActivity {
             final long maxHeapSizeInMB=runtime.maxMemory() / 1048576L;
             final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
 
-            txtMemory.setText("Mem: " + usedMemInMB + "/" + availHeapSizeInMB + " MB");
+            txtMemory.setText("M: " + usedMemInMB + "/" + availHeapSizeInMB + " MB");
             txtAdblock.setText("Ads: " + adblockCount);
+            cbxAd.setText("" + adblockCount);
 
             //capture();
 
@@ -1711,5 +1723,20 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         } catch (Exception e) {
         }
+    }
+
+    public static Bitmap toGrayscale(Bitmap srcImage) {
+
+        Bitmap bmpGrayscale = Bitmap.createBitmap(srcImage.getWidth(), srcImage.getHeight(), Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bmpGrayscale);
+        Paint paint = new Paint();
+
+        ColorMatrix cm = new ColorMatrix();
+        cm.setSaturation(0);        //0
+        paint.setColorFilter(new ColorMatrixColorFilter(cm));
+        canvas.drawBitmap(srcImage, 0, 0, paint);
+
+        return bmpGrayscale;
     }
 }
