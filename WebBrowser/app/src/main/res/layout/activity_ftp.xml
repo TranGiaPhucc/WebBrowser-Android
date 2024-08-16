@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#3C3C3C"
+    android:windowSoftInputMode="stateAlwaysHidden"
+    tools:context=".FTPActivity">
+
+    <EditText
+        android:id="@+id/txtFTP"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        android:hint="192.168.1.77"
+        android:text="192.168.1.77"
+        android:inputType="textUri"
+        android:selectAllOnFocus="true"
+        android:textColor="#CCFFFFFF"
+        android:textColorHint="#4DFFFFFF"
+        android:textSize="15dp" />
+
+    <EditText
+        android:id="@+id/txtUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/txtFTP"
+        android:hint="Username"
+        android:inputType="text"
+        android:selectAllOnFocus="true"
+        android:textColor="#CCFFFFFF"
+        android:textColorHint="#4DFFFFFF"
+        android:textSize="15dp" />
+
+    <EditText
+        android:id="@+id/txtPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/txtFTP"
+        android:layout_toRightOf="@id/txtUsername"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="true"
+        android:textColor="#CCFFFFFF"
+        android:textColorHint="#4DFFFFFF"
+        android:textSize="15dp" />
+
+    <CheckBox
+        android:id="@+id/cbxAnonymous"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Anonymous"
+        android:layout_below="@id/txtFTP"
+        android:layout_toRightOf="@id/txtPassword"
+        android:textColor="#AAAAAA"
+        />
+
+    <Button
+        android:id="@+id/btnConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_below="@id/txtFTP"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp"
+        android:text="Connect"
+        android:textAllCaps="false"
+        android:textColor="@color/black"
+        android:textSize="15dp" />
+
+    <TextView
+        android:id="@+id/lbFTPList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/btnConnect"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/black"
+        android:textSize="15dp"
+        />
+
+</RelativeLayout>

@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     TextView txtMemory, txtAdblock, txtScroll;
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
-    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone, btnCopy, btnPaste;
+    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone, btnCopy, btnPaste, btnFTP;
     ImageView imgInternetConnection, imgWebIcon;
     ListView listUrl;
     ArrayList<History> arrayList;
@@ -226,7 +226,8 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setUserAgentString(System.getProperty("http.agent"));
+        //webView.getSettings().setUserAgentString("Web/5.0 (Linux; U; Android 14)");     //System.getProperty("http.agent")        //webView.getSettings().getUserAgentString()
+        //"WebView/2.1.0 (Android 14; Pixel 4 XL Build/QQS1.190604.005)"
         //webView.loadUrl("https://www.google.com");
 
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
@@ -272,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
         btnForward=findViewById(R.id.btnForward);
         btnGoogle=findViewById(R.id.btnGoogle);
         btnYoutube=findViewById(R.id.btnYoutube);
+        btnFTP=findViewById(R.id.btnFTP);
         btnMicrophone=findViewById(R.id.btnMicrophone);
         btnCopy=findViewById(R.id.btnCopy);
         btnPaste=findViewById(R.id.btnPaste);
@@ -430,6 +432,14 @@ public class MainActivity extends AppCompatActivity {
 
                     Toast.makeText(MainActivity.this, "Pasted!", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        btnFTP.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, FTPActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -945,7 +955,6 @@ public class MainActivity extends AppCompatActivity {
                 //txtUrl.setText(url);
 
                 //if (!isRedirected) {
-                    prgBar.setVisibility(View.VISIBLE);
                     isLoaded = false;
                 //}
 

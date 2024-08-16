@@ -28,12 +28,14 @@ public class InternetSpeedMeterAutoStart extends BroadcastReceiver {
         //context.startActivity(main);
 
         Intent intent = new Intent(context, InternetSpeedMeter.class);
+        context.startService(intent);
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
-        }
-
+        }*/
+        /*
         Intent intent1 = new Intent(context, Sensor.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent1);
@@ -53,7 +55,7 @@ public class InternetSpeedMeterAutoStart extends BroadcastReceiver {
             context.startForegroundService(intent3);
         } else {
             context.startService(intent3);
-        }
+        }*/
 
         //context.sendBroadcast(main);
 

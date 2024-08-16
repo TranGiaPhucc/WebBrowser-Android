@@ -142,6 +142,15 @@
         android:visibility="visible" />
 
     <ImageButton
+        android:id="@+id/btnFTP"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@id/btnGo"
+        android:layout_toLeftOf="@id/btnMaps"
+        android:visibility="gone"
+        android:background="@drawable/ftp" />
+
+    <ImageButton
         android:id="@+id/btnMaps"
         android:layout_width="30dp"
         android:layout_height="30dp"

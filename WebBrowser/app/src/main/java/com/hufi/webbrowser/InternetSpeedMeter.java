@@ -33,6 +33,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class InternetSpeedMeter extends Service {
+    private Timer timer;
 
     private String connectionType = "";
     private Handler mHandler = new Handler();
@@ -53,7 +54,14 @@ public class InternetSpeedMeter extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopTimer();
         stopForeground(true);
+    }
+
+    public void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 
 /*
@@ -76,7 +84,7 @@ public class InternetSpeedMeter extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Timer timer = new Timer();
+        timer = new Timer();
         timer.schedule(new TimerTask()
         {
             @Override
@@ -111,9 +119,10 @@ public class InternetSpeedMeter extends Service {
 
         //onDestroy();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        start();
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             start();
-        }
+        }*/
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -209,23 +218,25 @@ public class InternetSpeedMeter extends Service {
         if (is3g || isWifi) {*/
             //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My notification");
 
+        String gr_name = "Internet speed meter";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("My notification", "My notification", NotificationManager.IMPORTANCE_MAX);
-            channel.setVibrationPattern(new long[]{ 0 });
+            NotificationChannel channel = new NotificationChannel(gr_name, gr_name, NotificationManager.IMPORTANCE_MAX);
+            channel.setVibrationPattern(new long[]{0});
             channel.enableVibration(false);
 
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
 
-            NotificationCompat.Builder noti = new NotificationCompat.Builder(this, "My notification")
+            NotificationCompat.Builder noti = new NotificationCompat.Builder(this, gr_name)
                     //.setContentTitle("Internet Speed Meter" + "     " + connectionType)
                     .setContentTitle("Connection type: " + connectionType)
                     .setContentText(contentText)
                     //builder.setSmallIcon(R.mipmap.ic_launcher_round);
                     .setSmallIcon(IconCompat.createFromIcon(icon))
                     .setAutoCancel(false)
-                    .setOnlyAlertOnce(true);
+                    .setOnlyAlertOnce(true)
+                    .setGroup(gr_name);
 
             //notificationManager.notify(1, noti.build());
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.hufi.webbrowser" >
+    package="com.hufi.webbrowser">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -17,19 +17,19 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission
         android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
+
     <supports-screens
+        android:anyDensity="true"
         android:largeScreens="true"
         android:normalScreens="true"
-        android:smallScreens="true"
         android:resizeable="true"
-        android:anyDensity="true" />
+        android:smallScreens="true" />
 
     <application
         android:allowBackup="true"
@@ -37,18 +37,20 @@
         android:label="WebBrowser"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.WebBrowser" >
+        android:theme="@style/Theme.WebBrowser"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".FTPActivity"
+            android:exported="false" />
+
         <service
             android:name=".Sensor2"
             android:enabled="false"
-            android:exported="true" >
-        </service>
+            android:exported="true"></service>
         <service
             android:name=".Sensor1"
             android:enabled="false"
-            android:exported="true" >
-        </service>
+            android:exported="true"></service>
         <service
             android:name=".Sensor"
             android:enabled="false"
@@ -57,7 +59,7 @@
         <receiver
             android:name=".InternetSpeedMeterAutoStart"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -74,9 +76,10 @@
             android:name=".InternetSpeedMeter"
             android:enabled="true"
             android:exported="true" />
+
         <receiver
             android:name=".NewAppWidget"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -88,7 +91,7 @@
 
         <activity
             android:name=".QrCodeScanner"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".Maps"
             android:configChanges="orientation|screenSize"
@@ -113,7 +116,7 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
