@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -89,6 +90,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     boolean isLoaded = false;
 
     boolean adCheck = false;
-    int adblockCount = 0;
+    int adCount = 0;
     int linkCount = 0;
 
     long uploadSpeedGlobal = 0;
@@ -221,14 +223,27 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setAllowFileAccess(true);
         //webView.getSettings().setAppCacheMaxSize( 1024 * 1024 * 1024 ); // 1GB (default: 5MB)
         //webView.getSettings().setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
-        //webView.getSettings().setAppCacheEnabled(true);
-        //webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);       //LOAD_DEFAULT     //LOAD_NO_CACHE
+        webView.getSettings().setAppCacheEnabled(true);
+        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);       //LOAD_DEFAULT     //LOAD_NO_CACHE
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setPluginState(WebSettings.PluginState.ON);
         //webView.getSettings().setUserAgentString("Web/5.0 (Linux; U; Android 14)");     //System.getProperty("http.agent")        //webView.getSettings().getUserAgentString()
         //"WebView/2.1.0 (Android 14; Pixel 4 XL Build/QQS1.190604.005)"
         //webView.loadUrl("https://www.google.com");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // chromium, enable hardware acceleration
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        } else {
+            // older android version, disable hardware acceleration
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+
+        /*if (Build.VERSION.SDK_INT >= 11){
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);       //LAYER_TYPE_NONE
+        }*/
 
         if (!CheckConnection.haveNetworkConnection(getApplicationContext())) {
             CheckConnection.ShowToast_Short(getApplicationContext(), "Không có kết nối mạng.");
@@ -241,10 +256,6 @@ public class MainActivity extends AppCompatActivity {
             {
                 startService(new Intent(this, InternetSpeedMeter.class));
             }
-        }
-
-        if (Build.VERSION.SDK_INT >= 11){
-            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);       //LAYER_TYPE_NONE
         }
 
         if (db.isHistoryEmpty() == true)
@@ -959,6 +970,8 @@ public class MainActivity extends AppCompatActivity {
                 //}
 
                 //isRedirected = false;
+
+                prgBar.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -995,7 +1008,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     AsyncTaskSQL runner = new AsyncTaskSQL();
-                    runner.execute(url, title);
+                    runner.execute("History", url, title);
 
                     /*sql = new SQL();
                     if (sql.isConnected() == false) {
@@ -1019,6 +1032,40 @@ public class MainActivity extends AppCompatActivity {
                 txtUrl.setText(url);
 
                 //isRedirected = true;
+
+                if (url.startsWith("intent://")) {
+                    try {
+                        Context context = view.getContext();
+                        Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+
+                        if (intent != null) {
+                            view.stopLoading();
+
+                            PackageManager packageManager = context.getPackageManager();
+                            ResolveInfo info = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+                            if (info != null) {
+                                context.startActivity(intent);
+                            } else {
+                                String fallbackUrl = intent.getStringExtra("browser_fallback_url");
+                                view.loadUrl(fallbackUrl);
+
+                                // or call external broswer
+//                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl));
+//                    context.startActivity(browserIntent);
+                            }
+
+                            return true;
+                        }
+                    } catch (URISyntaxException e) {
+                        /*if (GeneralData.DEBUG) {
+                            Log.e(TAG, "Can't resolve intent://", e);
+                        }*/
+                    }
+                }
+
+
+
+
 
                 if (url.endsWith(".mp4")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -1048,20 +1095,27 @@ public class MainActivity extends AppCompatActivity {
                 if (adCheck == true)
                     return super.shouldInterceptRequest(view, url);
 
-                boolean ad;
+                /*boolean ad;
                 if (!loadedUrls.containsKey(url)) {
                     ad = AdBlocker.isAd(url);
                     //loadedUrls.put(url, ad);
                     //linkCount++;
-                    if (ad == true) {
-                        adblockCount++;
+                    if (ad) {
+                        adCount++;
                         loadedUrls.put(url, ad);
-
-
                     }
                 } else {
                     ad = loadedUrls.get(url);
+                }*/
+
+                boolean ad = AdBlocker.isAd(url);
+                if (ad) {
+                    AsyncTaskSQL runner = new AsyncTaskSQL();
+                    runner.execute("Ad", url);
+
+                    adCount++;
                 }
+
                 return ad ? AdBlocker.createEmptyResource() :
                         super.shouldInterceptRequest(view, url);
             }
@@ -1070,6 +1124,13 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView view, int progress) {
                 prgBar.setProgress(progress);
+            }
+
+            @Override
+            public void onReceivedTitle(WebView view, String title) {
+                super.onReceivedTitle(view, title);
+
+
             }
 
             @Override
@@ -1358,8 +1419,8 @@ public class MainActivity extends AppCompatActivity {
             final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
 
             txtMemory.setText("M: " + usedMemInMB + "/" + availHeapSizeInMB + " MB");
-            txtAdblock.setText("Ads: " + adblockCount);
-            cbxAd.setText("" + adblockCount);
+            txtAdblock.setText("Ads: " + adCount);
+            cbxAd.setText("" + adCount);
 
             //capture();
 

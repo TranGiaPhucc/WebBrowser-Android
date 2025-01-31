@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Icon;
@@ -202,7 +203,7 @@ public class InternetSpeedMeter extends Service {
         contentText = "Upload: " + uploadSpeed + " " + uploadUnit + "        Download: " + downloadSpeed + " " + downloadUnit;
         //contentText = "Upload: " + Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10) + " MBps        Download: " + Double.toString((double)Math.round(rxBytes / 1000 * 10) / 10) + " MBps";
 
-        Bitmap bitmap = createBitmapFromString(bmSpeed, bmUnit);
+        Bitmap bitmap = createBitmapFromString(bmSpeed, bmUnit, rxBytes);
         Icon icon = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             icon = Icon.createWithBitmap(bitmap);
@@ -256,17 +257,41 @@ public class InternetSpeedMeter extends Service {
         managerCompat.notify(1, builder.build());*/
     }
 
-    private Bitmap createBitmapFromString(String speed, String units) {
+    private Bitmap createBitmapFromString(String speed, String units, long rxBytes) {
+        int red = 0;
+        int green = 255;
+        int blue = 0;
+
+        double value = (double) (rxBytes);
+        double high = 10000;        //high usage, rxbytes
+        double medium = 1000;       //medium usage, rxbytes
+
+        if (value >= high) {
+            red = 255;
+            green = 0;
+            blue = 0;
+        } else if (value >= medium) {
+            red = 255;
+            green = (int) (255 - Math.round(value / high * 255));
+            blue = 0;
+        } else {
+            red = (int) (Math.round(value / medium * 255));
+            green = 255;
+            blue = 0;
+        }
 
         Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setTextSize(55);
         paint.setTextAlign(Paint.Align.CENTER);
+        //paint.setColor(Color.rgb(red, green, blue));
 
         Paint unitsPaint = new Paint();
         unitsPaint.setAntiAlias(true);
         unitsPaint.setTextSize(40); // size is in pixels
         unitsPaint.setTextAlign(Paint.Align.CENTER);
+        //unitsPaint.setColor(Color.WHITE);
+        //unitsPaint.setColor(Color.rgb(red, green, blue));
 
         Rect textBounds = new Rect();
         paint.getTextBounds(speed, 0, speed.length(), textBounds);

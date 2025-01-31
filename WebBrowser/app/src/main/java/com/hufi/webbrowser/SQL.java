@@ -15,11 +15,11 @@ import java.util.Date;
 import java.util.List;
 
 public class SQL {
-    private static String ip = "192.168.1.189";
+    private static String ip = "192.168.1.65";
     private static String port = "1433";
     private static String Classes = "net.sourceforge.jtds.jdbc.Driver";
     private static String database = "WebBrowser";
-    private static String username = "sa";
+    private static String username = "client";
     private static String password = "123";
     private static String url = "jdbc:jtds:sqlserver://"+ip+":"+port+"/"+database;
     private static int timeout = 5;     //Seconds
@@ -88,6 +88,18 @@ public class SQL {
         return false;
     }
  */
+    public void insertAd(String url) {
+        if (connection == null)
+            return;
+
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.executeQuery("insert into Ad values ('" + url + "')");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void insertUrl(String url, String title) {
         if (connection == null)

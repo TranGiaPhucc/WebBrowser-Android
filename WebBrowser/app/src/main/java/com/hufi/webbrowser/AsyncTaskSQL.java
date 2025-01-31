@@ -11,7 +11,10 @@ public class AsyncTaskSQL extends AsyncTask<String, String, String> {
     protected String doInBackground(String... strings) {
         SQL sql = new SQL();
         if (sql.isConnected() == true) {
-            sql.insertUrl(strings[0], strings[1]);
+            if (strings[0].equals("History"))
+                sql.insertUrl(strings[1], strings[2]);
+            if (strings[0].equals("Ad"))
+                sql.insertAd(strings[1]);
             //Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             //v.vibrate(100);
             try {
