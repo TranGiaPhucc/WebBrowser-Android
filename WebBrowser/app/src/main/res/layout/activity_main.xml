@@ -147,8 +147,8 @@
         android:layout_height="30dp"
         android:layout_below="@id/btnGo"
         android:layout_toLeftOf="@id/btnMaps"
-        android:visibility="gone"
-        android:background="@drawable/ftp" />
+        android:background="@drawable/ftp"
+        android:visibility="gone" />
 
     <ImageButton
         android:id="@+id/btnMaps"

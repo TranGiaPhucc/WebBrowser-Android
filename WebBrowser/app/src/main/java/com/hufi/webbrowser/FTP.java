@@ -43,7 +43,7 @@ public class FTP extends AsyncTask<String, String, Boolean> {
             //Enter passive mode (optional, but recommended for firewalled environments)
             //ftpClient.enterLocalPassiveMode();
 
-            String path = "/AiDisk_a1";
+            String path = "";     //"/AiDisk_a1";
             files = ftpClient.listFiles(path);
         }
         catch (IOException e) {
