@@ -33,13 +33,16 @@
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="WebBrowser"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WebBrowser"
-        android:usesCleartextTraffic="true"
-        android:hardwareAccelerated="true">
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".InternetSpeedMeterActivity"
+            android:exported="false" />
         <activity
             android:name=".FTPActivity"
             android:exported="false" />
@@ -47,11 +50,11 @@
         <service
             android:name=".Sensor2"
             android:enabled="false"
-            android:exported="true"></service>
+            android:exported="true" />
         <service
             android:name=".Sensor1"
             android:enabled="false"
-            android:exported="true"></service>
+            android:exported="true" />
         <service
             android:name=".Sensor"
             android:enabled="false"

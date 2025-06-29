@@ -6,10 +6,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 
 public class Database {
     Context context;
@@ -17,6 +21,7 @@ public class Database {
     private String dbTable = "NguoiDung";
     private String dbTableHistory = "History";
     private String dbTableBookmark = "Bookmark";
+    private String dbTableInternetSpeedMeter = "InternetSpeedMeter";
 
     public Database(Context context)
     {
@@ -55,6 +60,11 @@ public class Database {
                 "url TEXT, " +
                 "title TEXT ) ";
         db.execSQL(sql);
+        sql = "create table if not exists InternetSpeedMeter(" +
+                "date INTEGER PRIMARY KEY, " +
+                "upload REAL," +
+                "download REAL ) ";
+        db.execSQL(sql);
         closeDB(db);
     }
 
@@ -87,7 +97,35 @@ public class Database {
                     String title = csr.getString(2);
                     arr.add(new	History(url, title));
                 }	while	(csr.moveToPrevious());
-            } }
+            }
+        }
+        closeDB(db);
+        return	arr;
+    }
+
+    public ArrayList<InternetSpeedMeterClass> getInternetSpeedMeterAll()	{
+        SQLiteDatabase db =	openDB();
+        ArrayList<InternetSpeedMeterClass>	arr =	new	ArrayList<>();
+        String	sql =	"select	*	from	InternetSpeedMeter";
+        Cursor csr =	db.rawQuery(sql,	null);
+        if	(csr !=	null)	{
+            if	(csr.moveToLast())	{
+                do	{
+                    int date = csr.getInt(0);
+                    double upload = csr.getDouble(1);
+                    double download = csr.getDouble(2);
+
+                    String dateStr = String.valueOf(date);
+                    DateFormat df = new SimpleDateFormat("ddMMyyyy");
+                    try {
+                        arr.add(new	InternetSpeedMeterClass(df.parse(dateStr), upload, download));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                }	while	(csr.moveToPrevious());
+            }
+        }
         closeDB(db);
         return	arr;
     }
@@ -243,6 +281,62 @@ public class Database {
         flag = db.insert(dbTableHistory, null, cv) > 0;
         closeDB(db);
         return flag;
+    }
+
+    public boolean insertInternetSpeedMeter(InternetSpeedMeterClass i) {
+        boolean flag = false;
+        SQLiteDatabase db = openDB();
+        ContentValues cv = new ContentValues();
+
+        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+        int value = Integer.parseInt(df.format(i.getDate()));
+
+        cv.put("date", value);
+        cv.put("upload", i.getUpload() + getUploadSpeed(i.getDate()));
+        cv.put("download", i.getDownload() + getDownloadSpeed(i.getDate()));
+        //flag = db.insert(dbTableInternetSpeedMeter, null, cv) > 0;
+        flag = db.insertWithOnConflict(dbTableInternetSpeedMeter, null, cv, SQLiteDatabase.CONFLICT_REPLACE) > 0;
+
+        closeDB(db);
+        return flag;
+    }
+
+    public double getUploadSpeed(Date date) {
+        double upload = 0;
+        SQLiteDatabase db =	openDB();
+        String[] fields = {"date", "upload", "download"};
+
+        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+        int value = Integer.parseInt(df.format(date));
+
+        String[] ids = {String.valueOf(value)};
+        Cursor csr = db.query(dbTableInternetSpeedMeter, fields, "date	=	?", ids, null, null, null, null);
+        if	(csr !=	null)
+            csr.moveToFirst();
+
+        upload = csr.getDouble(1);
+
+        closeDB(db);
+        return upload;
+    }
+
+    public double getDownloadSpeed(Date date) {
+        double download = 0;
+        SQLiteDatabase db =	openDB();
+        String[] fields = {"date", "upload", "download"};
+
+        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+        int value = Integer.parseInt(df.format(date));
+
+        String[] ids = {String.valueOf(value)};
+        Cursor csr = db.query(dbTableInternetSpeedMeter, fields, "date	=	?", ids, null, null, null, null);
+        if	(csr !=	null)
+            csr.moveToFirst();
+
+        download = csr.getDouble(2);
+
+        closeDB(db);
+        return download;
     }
 
     public boolean insert(NguoiDung nguoidung) {

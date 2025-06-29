@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     TextView txtMemory, txtAdblock, txtScroll;
     CheckBox cbxAd, cbxInternetSpeedMeter;
     Button btnGo, btnBack, btnForward, btnGoogle, btnYoutube;
-    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone, btnCopy, btnPaste, btnFTP;
+    ImageButton btnReload, btnMaps, btnPhoneDesktop, btnHistory, btnBookmark, btnBookmarkCheck, btnQRCode, btnMicrophone, btnCopy, btnPaste, btnFTP, btnISP;
     ImageView imgInternetConnection, imgWebIcon;
     ListView listUrl;
     ArrayList<History> arrayList;
@@ -293,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
         btnHistory=findViewById(R.id.btnHistory);
         btnBookmark=findViewById(R.id.btnBookmark);
         btnBookmarkCheck=findViewById(R.id.btnBookmarkCheck);
+        btnISP=findViewById(R.id.btnISP);
         prgBar=findViewById(R.id.prgBar);
         spnSearch=findViewById(R.id.spnSearch);
         refreshLayout=findViewById(R.id.refreshLayout);
@@ -450,6 +451,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, FTPActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        btnISP.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, InternetSpeedMeterActivity.class);
                 startActivity(intent);
             }
         });

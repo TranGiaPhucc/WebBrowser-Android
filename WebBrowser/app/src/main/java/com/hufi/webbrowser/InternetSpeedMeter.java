@@ -30,6 +30,11 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -178,7 +183,7 @@ public class InternetSpeedMeter extends Service {
         String uploadSpeed, downloadSpeed, uploadUnit, downloadUnit;
         String contentText;
 
-        if (txBytes < 1000) {
+        if (txBytes < 1024) {
             uploadSpeed = Long.toString(txBytes);
             uploadUnit = "KB/s";
         }
@@ -187,15 +192,11 @@ public class InternetSpeedMeter extends Service {
             uploadUnit = "MB/s";
         }
 
-        if (rxBytes < 1000) {
-            bmSpeed = Long.toString(rxBytes);
-            bmUnit = "KB/s";
+        if (rxBytes < 1024) {
             downloadSpeed = Long.toString(rxBytes);
             downloadUnit = "KB/s";
         }
         else {
-            bmSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
-            bmUnit = "MB/s";
             downloadSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
             downloadUnit = "MB/s";
         }
@@ -203,7 +204,26 @@ public class InternetSpeedMeter extends Service {
         contentText = "Upload: " + uploadSpeed + " " + uploadUnit + "        Download: " + downloadSpeed + " " + downloadUnit;
         //contentText = "Upload: " + Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10) + " MBps        Download: " + Double.toString((double)Math.round(rxBytes / 1000 * 10) / 10) + " MBps";
 
-        Bitmap bitmap = createBitmapFromString(bmSpeed, bmUnit, rxBytes);
+        //total
+        long totalBytes = txBytes + rxBytes;
+        if (totalBytes < 1024) {
+            bmSpeed = Long.toString(totalBytes);
+            bmUnit = "KB/s";
+        }
+        else {
+            bmSpeed = Double.toString((double)Math.round((double)totalBytes / 1000 * 10) / 10);
+            bmUnit = "MB/s";
+        }
+
+        //SQLite
+        Database db = new Database(InternetSpeedMeter.this);
+        Date d = Calendar.getInstance().getTime();
+
+        InternetSpeedMeterClass i = new InternetSpeedMeterClass(d, (double)txBytes / 1024, (double)rxBytes / 1024);
+        db.insertInternetSpeedMeter(i);
+
+        //Noti
+        Bitmap bitmap = createBitmapFromString(bmSpeed, bmUnit, totalBytes);
         Icon icon = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             icon = Icon.createWithBitmap(bitmap);
