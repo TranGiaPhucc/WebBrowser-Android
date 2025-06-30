@@ -160,8 +160,8 @@
 
     <ImageButton
         android:id="@+id/btnISP"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_below="@id/btnGo"
         android:layout_toLeftOf="@id/btnMaps"
         android:background="@android:drawable/ic_menu_info_details" />

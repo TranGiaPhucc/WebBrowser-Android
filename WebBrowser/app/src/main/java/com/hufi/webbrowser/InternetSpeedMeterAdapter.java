@@ -62,10 +62,10 @@ public class InternetSpeedMeterAdapter extends ArrayAdapter<InternetSpeedMeterCl
         lbDate.setText(date);
 
         TextView lbUpload = convertView.findViewById(R.id.lbUpload);
-        lbUpload.setText("↑: " + upload + txUnit);
+        lbUpload.setText("↑ " + upload + txUnit);
 
         TextView lbDownload = convertView.findViewById(R.id.lbDownload);
-        lbDownload.setText("↓: " + download + rxUnit);
+        lbDownload.setText("↓ " + download + rxUnit);
 
         if (position % 2 == 1) {
             convertView.setBackgroundColor(Color.parseColor("#505050"));

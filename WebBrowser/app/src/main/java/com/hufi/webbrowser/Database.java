@@ -360,6 +360,38 @@ public class Database {
         return download;
     }
 
+    public InternetSpeedMeterClass getThisMonthSpeed(Date d)	{
+        InternetSpeedMeterClass i = new InternetSpeedMeterClass(d, 0, 0);
+        double upload = 0;
+        double download = 0;
+
+        SQLiteDatabase db =	openDB();
+        String	sql =	"select	*	from	InternetSpeedMeter";
+        Cursor csr =	db.rawQuery(sql,	null);
+        if	(csr !=	null)	{
+            if	(csr.moveToLast())	{
+                do	{
+                    int date = csr.getInt(0);
+                    int month = date % 1000000;
+
+                    DateFormat df = new SimpleDateFormat("ddMMyyyy");
+                    String dateStr = df.format(d);
+                    int dateInt = Integer.parseInt(dateStr) % 1000000;
+
+                    if (month == dateInt) {
+                        upload += csr.getDouble(1);
+                        download += csr.getDouble(2);
+
+                        i.setUpload(upload);
+                        i.setDownload(download);
+                    }
+                }	while	(csr.moveToPrevious());
+            }
+        }
+        closeDB(db);
+        return	i;
+    }
+
     public boolean insert(NguoiDung nguoidung) {
         boolean flag = false;
         SQLiteDatabase db = openDB();

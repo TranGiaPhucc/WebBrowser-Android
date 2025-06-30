@@ -1587,7 +1587,7 @@ public class MainActivity extends AppCompatActivity {
                 downloadSpeed = Double.toString((double)Math.round((double)rxBytes / 1000 * 10) / 10);
                 downloadUnit = "MB/s";
             }
-            contentDownload = "↓: " + downloadSpeed + " " + downloadUnit;
+            contentDownload = "↓ " + downloadSpeed + " " + downloadUnit;
             RX.setText(contentDownload);
 
             //txBytes = (TrafficStats.getTotalTxBytes() - mStartTX)/1024;           //KBps
@@ -1599,7 +1599,7 @@ public class MainActivity extends AppCompatActivity {
                 uploadSpeed = Double.toString((double)Math.round((double)txBytes / 1000 * 10) / 10);
                 uploadUnit = "MB/s";
             }
-            contentUpload = "↑: " + uploadSpeed + " " + uploadUnit;
+            contentUpload = "↑ " + uploadSpeed + " " + uploadUnit;
             TX.setText(contentUpload);
 
             uploadSpeedGlobal = txBytes;

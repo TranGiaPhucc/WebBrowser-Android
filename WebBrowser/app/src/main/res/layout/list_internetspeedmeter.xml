@@ -10,7 +10,7 @@
         android:layout_marginTop="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:textSize="15dp"
+        android:textSize="13dp"
         android:textColor="#CCFFFFFF"
         android:id="@+id/lbDate" />
 
@@ -21,7 +21,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="5dp"
-        android:textSize="10dp"
+        android:textSize="15dp"
         android:textColor="#CCFFFFFF"
         android:layout_below="@id/lbDate"
         android:id="@+id/lbUpload" />
@@ -30,12 +30,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxHeight="50dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginLeft="40dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="5dp"
-        android:textSize="10dp"
+        android:textSize="15dp"
         android:textColor="#CCFFFFFF"
-        android:layout_below="@id/lbUpload"
+        android:layout_below="@id/lbDate"
+        android:layout_toRightOf="@id/lbUpload"
         android:id="@+id/lbDownload" />
 
 </RelativeLayout>
