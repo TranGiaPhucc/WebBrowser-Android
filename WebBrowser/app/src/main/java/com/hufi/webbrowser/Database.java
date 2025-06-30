@@ -104,6 +104,8 @@ public class Database {
     }
 
     public ArrayList<InternetSpeedMeterClass> getInternetSpeedMeterAll()	{
+        int day = 0;
+
         SQLiteDatabase db =	openDB();
         ArrayList<InternetSpeedMeterClass>	arr =	new	ArrayList<>();
         String	sql =	"select	*	from	InternetSpeedMeter";
@@ -123,7 +125,9 @@ public class Database {
                         e.printStackTrace();
                     }
 
-                }	while	(csr.moveToPrevious());
+                    day++;
+
+                }	while	(csr.moveToPrevious() && day <= 365);
             }
         }
         closeDB(db);
@@ -283,6 +287,23 @@ public class Database {
         return flag;
     }
 
+    public boolean insertInternetSpeedMeterInitializeDate(Date d) {
+        boolean flag = false;
+        SQLiteDatabase db = openDB();
+        ContentValues cv = new ContentValues();
+
+        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+        int value = Integer.parseInt(df.format(d));
+
+        cv.put("date", value);
+        cv.put("upload", 0);
+        cv.put("download", 0);
+        flag = db.insert(dbTableInternetSpeedMeter, null, cv) > 0;
+
+        closeDB(db);
+        return flag;
+    }
+
     public boolean insertInternetSpeedMeter(InternetSpeedMeterClass i) {
         boolean flag = false;
         SQLiteDatabase db = openDB();
@@ -292,8 +313,8 @@ public class Database {
         int value = Integer.parseInt(df.format(i.getDate()));
 
         cv.put("date", value);
-        cv.put("upload", i.getUpload() + getUploadSpeed(i.getDate()));
-        cv.put("download", i.getDownload() + getDownloadSpeed(i.getDate()));
+        cv.put("upload", i.getUpload());      //getUploadSpeed(i.getDate())
+        cv.put("download", i.getDownload());
         //flag = db.insert(dbTableInternetSpeedMeter, null, cv) > 0;
         flag = db.insertWithOnConflict(dbTableInternetSpeedMeter, null, cv, SQLiteDatabase.CONFLICT_REPLACE) > 0;
 
@@ -311,10 +332,10 @@ public class Database {
 
         String[] ids = {String.valueOf(value)};
         Cursor csr = db.query(dbTableInternetSpeedMeter, fields, "date	=	?", ids, null, null, null, null);
-        if	(csr !=	null)
+        if	(csr !=	null) {
             csr.moveToFirst();
-
-        upload = csr.getDouble(1);
+            upload = csr.getDouble(1);
+        }
 
         closeDB(db);
         return upload;
@@ -330,10 +351,10 @@ public class Database {
 
         String[] ids = {String.valueOf(value)};
         Cursor csr = db.query(dbTableInternetSpeedMeter, fields, "date	=	?", ids, null, null, null, null);
-        if	(csr !=	null)
+        if	(csr !=	null) {
             csr.moveToFirst();
-
-        download = csr.getDouble(2);
+            download = csr.getDouble(2);
+        }
 
         closeDB(db);
         return download;

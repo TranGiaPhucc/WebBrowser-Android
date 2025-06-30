@@ -219,7 +219,10 @@ public class InternetSpeedMeter extends Service {
         Database db = new Database(InternetSpeedMeter.this);
         Date d = Calendar.getInstance().getTime();
 
-        InternetSpeedMeterClass i = new InternetSpeedMeterClass(d, (double)txBytes / 1024, (double)rxBytes / 1024);
+        //Create date primary key first so getupload/downloadspeed doesn't crash because can't find date (28 to 29/06/2025 is working, why 30/06/2025 and up not?, so I add this)
+        db.insertInternetSpeedMeterInitializeDate(d);
+
+        InternetSpeedMeterClass i = new InternetSpeedMeterClass(d, db.getUploadSpeed(d) + (double)txBytes / 1024, db.getDownloadSpeed(d) + (double)rxBytes / 1024);
         db.insertInternetSpeedMeter(i);
 
         //Noti
