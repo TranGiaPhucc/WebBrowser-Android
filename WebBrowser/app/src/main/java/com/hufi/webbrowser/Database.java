@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -104,8 +105,6 @@ public class Database {
     }
 
     public ArrayList<InternetSpeedMeterClass> getInternetSpeedMeterAll()	{
-        int count = 0;
-
         SQLiteDatabase db =	openDB();
         ArrayList<InternetSpeedMeterClass>	arr =	new	ArrayList<>();
         String	sql =	"select	*	from	InternetSpeedMeter";
@@ -117,21 +116,26 @@ public class Database {
                     double upload = csr.getDouble(1);
                     double download = csr.getDouble(2);
 
+                    DateFormat df = new SimpleDateFormat("ddMMyyyy");
+
                     String dateStr = String.valueOf(date);
                     int day = date / 1000000;
                     if (day < 10)
                         dateStr = "0" + dateStr;
 
-                    DateFormat df = new SimpleDateFormat("ddMMyyyy");
-                    try {
-                        arr.add(new	InternetSpeedMeterClass(df.parse(dateStr), upload, download));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                    int month = date % 1000000;
+
+                    String dateStrNow = df.format(Calendar.getInstance().getTime());
+                    int monthNow = Integer.parseInt(dateStrNow) % 1000000;
+
+                    if (month == monthNow) {
+                        try {
+                            arr.add(new InternetSpeedMeterClass(df.parse(dateStr), upload, download));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
                     }
-
-                    day++;
-
-                }	while	(csr.moveToPrevious() && count <= 365);
+                }	while	(csr.moveToPrevious());
             }
         }
         closeDB(db);
