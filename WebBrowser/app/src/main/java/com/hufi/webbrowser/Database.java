@@ -104,7 +104,7 @@ public class Database {
     }
 
     public ArrayList<InternetSpeedMeterClass> getInternetSpeedMeterAll()	{
-        int day = 0;
+        int count = 0;
 
         SQLiteDatabase db =	openDB();
         ArrayList<InternetSpeedMeterClass>	arr =	new	ArrayList<>();
@@ -118,6 +118,10 @@ public class Database {
                     double download = csr.getDouble(2);
 
                     String dateStr = String.valueOf(date);
+                    int day = date / 1000000;
+                    if (day < 10)
+                        dateStr = "0" + dateStr;
+
                     DateFormat df = new SimpleDateFormat("ddMMyyyy");
                     try {
                         arr.add(new	InternetSpeedMeterClass(df.parse(dateStr), upload, download));
@@ -127,7 +131,7 @@ public class Database {
 
                     day++;
 
-                }	while	(csr.moveToPrevious() && day <= 365);
+                }	while	(csr.moveToPrevious() && count <= 365);
             }
         }
         closeDB(db);
