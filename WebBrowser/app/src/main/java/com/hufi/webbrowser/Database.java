@@ -145,65 +145,49 @@ public class Database {
     public ArrayList<History> getUrlRecommend(String urlText)	{
         ArrayList<History> arr = new ArrayList<>();
 
-        if (urlText.equals(""))
-            return arr;
+        /*if (urlText.equals(""))
+            return arr;*/
 
-        ArrayList<String> arrCheck = new ArrayList<>();
+        int countUrl = 0;
+
         SQLiteDatabase db =	openDB();
 
         String sql = "select * from History where url like '%" + urlText + "%'";
         Cursor csr = db.rawQuery(sql, null);
-        if	(csr !=	null)	{
-            String urlBest = "";
-            String titleBest = "";
-
-            if	(csr.moveToLast())	{
-                do	{
+        if	(csr !=	null) {
+            if (csr.moveToLast()) {
+                do {
                     String url = csr.getString(1);
                     String title = csr.getString(2);
 
-                    if (url.contains(urlText) && !arrCheck.contains(url)) {
-                        History h = new History(url, title);
-                        arr.add(0, h);
-                        arrCheck.add(0, url);
-                    }
+                    boolean duplicatedUrl = false;
 
-                    if ((urlBest.equals("") || url.length() < urlBest.length())) {
-                        urlBest = url;
-                        titleBest = title;
-                    }
-                }	while	(csr.moveToPrevious());
+                    if (url.contains(urlText)) {
+                        for (int i = 0; i < arr.size(); i++) {
+                            if (arr.get(i).getUrl().equals(url)) {
+                                duplicatedUrl = true;
+                                break;
+                            }
+                        }
+                        if (!duplicatedUrl) {
+                            History h = new History(url, title);
+                            arr.add(0, h);
 
-                History h = new History(urlBest, titleBest);
-                for (int i=0; i<arr.size(); i++) {
-                    if (arr.get(i).getUrl() == urlBest)
-                        arr.remove(i);
-                }
-                arr.add(0, h);
+                            countUrl++;
+                        }
+                    }
+                } while (csr.moveToPrevious() && countUrl < 10);
             }
         }
 
-        /*
-        String	sql =	"select	*	from	History";
-        Cursor csr =	db.rawQuery(sql,	null);
-        if	(csr !=	null)	{
-            if	(csr.moveToLast())	{
-                do	{
-                    String url = csr.getString(1);
-                    String title = csr.getString(2);
-                    //int count = countHistoryUrl(url);
-                    History h = new History(url, title);
-                    if (url.contains(urlText) && !arrCheck.contains(url)) {
-                            arr.add(h);
-                            arrCheck.add(url);
-                    }
-                }	while	(csr.moveToPrevious());
-            }
-        }*/
-
         closeDB(db);
 
-        return	arr;
+        ArrayList<History> arrRev = new ArrayList<>();
+        for (int i = arr.size() - 1; i >= 0; i--) {
+            arrRev.add(arr.get(i));
+        }
+
+        return arrRev;
     }
 
     public ArrayList<NguoiDung> getNguoiDungAll()	{
