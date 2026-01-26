@@ -122,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
 
     boolean listUrlVisible = false;
 
+    int startScrollY = -1;
+
     //boolean isRedirected = false;
     boolean isLoaded = false;
 
@@ -334,8 +336,8 @@ public class MainActivity extends AppCompatActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        refreshLayout.setRefreshing(false);
                         webView.reload();
+                        refreshLayout.setRefreshing(false);
                     }
                 },0);
             }
@@ -354,14 +356,18 @@ public class MainActivity extends AppCompatActivity {
             public void onScrollChanged() {
                 txtScroll.setText("S: " + webView.getScrollY() + "/" + ((int) Math.floor(webView.getContentHeight() * webView.getScale() - webView.getHeight())));    //((int) Math.floor(webView.getContentHeight() * webView.getScale() - webView.getHeight()))
                 //if (webView.getUrl().contains("youtube.com")) {
-                if (!webView.canScrollVertically(1)) {   //1 down -1 up
+                /*if (!webView.canScrollVertically(1)) {   //1 down -1 up
                     refreshLayout.setEnabled(false);
                 }
                 else if (webView.getScrollY() == 0) {
                     refreshLayout.setEnabled(true);
                 } else {
                     refreshLayout.setEnabled(false);
-                }
+                }*/
+
+                /*if (!webView.canScrollVertically(-1) && webView.getScrollY() == 0) {
+                    webView.reload();
+                }*/
             }
         });
 
@@ -651,6 +657,7 @@ public class MainActivity extends AppCompatActivity {
                     listUrlVisible = false;
                     webView.requestFocus();
                 }
+
                 return false;
             }
         });
