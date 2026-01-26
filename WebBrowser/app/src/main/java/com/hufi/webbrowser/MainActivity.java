@@ -1018,7 +1018,7 @@ public class MainActivity extends AppCompatActivity {
                         "    /* Wait a tiny bit or check if title is valid */ " +
                         "    setTimeout(function() { " +
                         "       Android.onUrlChange(location.href, document.title); " +
-                        "    }, 500); " +
+                        "    }, 1000); " +
                         "  } " +
                         "}); " +
                         "var target = document.querySelector('title'); " +
