@@ -998,8 +998,8 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 //Log.e("URL", url);
 
-                //get url js
-                view.loadUrl("javascript:(function() { " +
+                //get url js, still not consistently getting actual Youtube title
+                /*view.loadUrl("javascript:(function() { " +
                         "var lastUrl = location.href; " +
                         "setInterval(function() { " +
                         "  if (location.href != lastUrl) { " +
@@ -1007,6 +1007,22 @@ public class MainActivity extends AppCompatActivity {
                         "    Android.onUrlChange(lastUrl, document.title); " +
                         "  } " +
                         "}, 1000); " +
+                        "})()");*/
+
+                //get url js, consistent
+                view.loadUrl("javascript:(function() { " +
+                        "var lastUrl = location.href; " +
+                        "var observer = new MutationObserver(function() { " +
+                        "  if (location.href !== lastUrl) { " +
+                        "    lastUrl = location.href; " +
+                        "    /* Wait a tiny bit or check if title is valid */ " +
+                        "    setTimeout(function() { " +
+                        "       Android.onUrlChange(location.href, document.title); " +
+                        "    }, 500); " +
+                        "  } " +
+                        "}); " +
+                        "var target = document.querySelector('title'); " +
+                        "observer.observe(target, { subtree: true, characterData: true, childList: true }); " +
                         "})()");
 
                 if (prgBar.getProgress() < 100)
@@ -1015,13 +1031,13 @@ public class MainActivity extends AppCompatActivity {
                 if (isLoaded)
                     return;
 
-                isLoaded = true;
-                prgBar.setVisibility(View.GONE);
-
                 txtScroll.setText("S: " + view.getScrollY() + "/" + ((int) Math.floor(view.getContentHeight() * view.getScale() - view.getHeight())));
 
                 String title = view.getTitle();
                 handleUrlChange(url, title);
+
+                isLoaded = true;
+                prgBar.setVisibility(View.GONE);
 
                 //String urlCheck = txtUrl.getText().toString();
                 /*urlNow = url;
