@@ -54,6 +54,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
@@ -121,8 +122,6 @@ public class MainActivity extends AppCompatActivity {
     private String urlNow = "";
 
     boolean listUrlVisible = false;
-
-    int startScrollY = -1;
 
     //boolean isRedirected = false;
     boolean isLoaded = false;
@@ -230,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setSupportMultipleWindows(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
         webView.getSettings().setPluginState(WebSettings.PluginState.ON);
         //webView.getSettings().setUserAgentString("Web/5.0 (Linux; U; Android 14)");     //System.getProperty("http.agent")        //webView.getSettings().getUserAgentString()
         //"WebView/2.1.0 (Android 14; Pixel 4 XL Build/QQS1.190604.005)"
@@ -972,6 +972,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        webView.addJavascriptInterface(new WebAppInterface(), "Android");
+
         webView.setWebViewClient(new WebViewClient(){
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon)
@@ -996,6 +998,17 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 //Log.e("URL", url);
 
+                //get url js
+                view.loadUrl("javascript:(function() { " +
+                        "var lastUrl = location.href; " +
+                        "setInterval(function() { " +
+                        "  if (location.href != lastUrl) { " +
+                        "    lastUrl = location.href; " +
+                        "    Android.onUrlChange(lastUrl, document.title); " +
+                        "  } " +
+                        "}, 1000); " +
+                        "})()");
+
                 if (prgBar.getProgress() < 100)
                     return;
 
@@ -1007,8 +1020,11 @@ public class MainActivity extends AppCompatActivity {
 
                 txtScroll.setText("S: " + view.getScrollY() + "/" + ((int) Math.floor(view.getContentHeight() * view.getScale() - view.getHeight())));
 
+                String title = view.getTitle();
+                handleUrlChange(url, title);
+
                 //String urlCheck = txtUrl.getText().toString();
-                urlNow = url;
+                /*urlNow = url;
                 txtUrl.setText(urlNow);
 
                 //if (!urlCheck.equals(txtUrl.getText().toString())) {
@@ -1039,7 +1055,7 @@ public class MainActivity extends AppCompatActivity {
                     }*/
                 //}
 
-                capture();
+                //capture();*/        //capture to widget
             }
 
             @Override
@@ -1824,5 +1840,36 @@ public class MainActivity extends AppCompatActivity {
         canvas.drawBitmap(srcImage, 0, 0, paint);
 
         return bmpGrayscale;
+    }
+
+    public class WebAppInterface {
+        @JavascriptInterface
+        public void onUrlChange(String url, String title) {
+            handleUrlChange(url, title);
+        }
+    }
+
+    private void handleUrlChange(String url, String title) {
+        runOnUiThread(() -> {
+            if (urlNow.equals(url))
+                return;
+
+            urlNow = url;
+            txtUrl.setText(url);
+
+            History h = new History(url, title);
+            db.insertHistory(h);
+
+            if (db.checkBookmarkExist(url)) {
+                btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_on);
+            } else {
+                btnBookmarkCheck.setBackgroundResource(android.R.drawable.btn_star_big_off);
+            }
+
+            AsyncTaskSQL runner = new AsyncTaskSQL();
+            runner.execute("History", url, title);
+
+            capture();
+        });
     }
 }
