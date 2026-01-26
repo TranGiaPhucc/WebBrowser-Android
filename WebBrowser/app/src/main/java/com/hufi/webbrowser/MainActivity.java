@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
                 //webView.reload();
                 //refreshLayout.setRefreshing(false);
 
-                refreshLayout.setRefreshing(true);
+                //refreshLayout.setRefreshing(true);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
